@@ -120,3 +120,12 @@ there would make the plugin stop matching its own fixture.
   `pnpm testdata`). Real-world samples fetched by `pnpm testdata:real`
   are public-domain works from the Internet Archive / Project Gutenberg
   and live only in the gitignored `testdata-real/` directory.
+
+## Requirements
+
+- hoardodile **≥ 0.1.1** — the built-in plugin marketplace
+  (**Settings → Marketplace**) and the batched asset-download API
+  (`download([…])`) when the manifest declares `"download": true`.
+- This plugin's version is independent of the hoardodile release
+  version.
+- Dev loop: Node ≥ 24, pnpm 11.
