@@ -1,0 +1,16 @@
+allowBuilds:
+  '@derhuerst/ffprobe-static': true
+  '@hoardodile/7z-bin': true
+  ffmpeg-static: true
+minimumReleaseAgeExclude:
+  - '@hoardodile/cli@0.1.1'
+  - '@hoardodile/host-web@0.1.1'
+  - '@hoardodile/host@0.1.1'
+  - '@hoardodile/i18n@0.1.1'
+  - '@hoardodile/sdk-react@0.1.1'
+  - '@hoardodile/sdk-server@0.1.1'
+  - '@hoardodile/sdk-types@0.1.1'
+  - '@hoardodile/sdk-web@0.1.1'
+  - '@hoardodile/ui@0.1.1'
+  - '@hoardodile/workbench@0.1.1'
+  - '@hoardodile/7z-bin@1.1.3'

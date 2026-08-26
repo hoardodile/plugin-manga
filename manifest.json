@@ -1,0 +1,75 @@
+{
+	"id": "c9cf1c0a-2a99-44fe-ac71-4068bea2fabf",
+	"name": "Manga",
+	"description": "Manga reader with chapters, scroll / paged modes, per-page messages and position restore.",
+	"version": "0.1.0",
+	"icon": "book-2",
+	"permissions": {
+		"sourceMeta": true,
+		"searchMeta": true,
+		"message": true,
+		"imageHashes": true,
+		"container": true
+	},
+	"i18n": {
+		"name": {
+			"en": "Manga",
+			"zh": "漫画"
+		},
+		"description": {
+			"en": "Manga reader with chapters, scroll / paged modes, per-page messages and position restore.",
+			"zh": "漫画阅读器，支持章节、滚动/翻页模式、页内留言与阅读进度恢复。"
+		},
+		"imageKindLabel": {
+			"en": "Image",
+			"zh": "图片"
+		},
+		"animationKindLabel": {
+			"en": "Animation",
+			"zh": "动图"
+		},
+		"anchorLabel": {
+			"en": "P",
+			"zh": "页"
+		},
+		"chapterUnit": {
+			"en": "Ch.",
+			"zh": "话"
+		},
+		"chapterCountLabel": {
+			"en": "chapters",
+			"zh": "话"
+		}
+	},
+	"ui": {
+		"height": "85vh",
+		"card": {
+			"image": {
+				"bl": [
+					"{{if(gt(file.count, 1), join(' ', searchKindIcons(), file.count))}}",
+					"{{if(gt(source.chapterCount, 1), join(' ', source.chapterCount, t('chapterCountLabel')))}}"
+				],
+				"br": [
+					"{{if(source.width, join(' ', source.width, 'x', source.height))}}"
+				]
+			}
+		},
+		"search": {
+			"kinds": [
+				{
+					"key": "image",
+					"label": "{{t('imageKindLabel')}}",
+					"icon": "{{icon('Image')}}"
+				},
+				{
+					"key": "animation",
+					"label": "{{t('animationKindLabel')}}",
+					"icon": "{{icon('Sparkle')}}"
+				}
+			]
+		},
+		"message": {
+			"anchor": "{{join(' ', join('', t('chapterUnit'), inc(data.chapter)), join('', t('anchorLabel'), inc(data.page)))}}"
+		}
+	}
+}

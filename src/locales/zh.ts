@@ -1,0 +1,18 @@
+export default {
+	modeScroll: "滚动",
+	modePaged: "翻页",
+	commentPlaceholder: "为这一页写下留言",
+	commentSend: "发送",
+	page: "第",
+	pageCount: "/ {{total}}",
+	showOriginal: "查看原图",
+	showPreview: "查看预览",
+	chapters: "目录",
+	chaptersCount: "共 {{total}} 话",
+	chaptersEmpty: "未检测到章节",
+	chapterDefault: "第1话",
+	chapterLabel: "第{{chapter}}话",
+	chapterRead: "已读",
+	chapterProgress: "{{current}}/{{total}}",
+	extracting: "正在解压页面…",
+} as const

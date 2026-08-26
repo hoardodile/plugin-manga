@@ -1,0 +1,18 @@
+export default {
+	modeScroll: "Scroll",
+	modePaged: "Paged",
+	commentPlaceholder: "Write a message for this page",
+	commentSend: "Send",
+	page: "page",
+	pageCount: "/ {{total}}",
+	showOriginal: "View Original",
+	showPreview: "View Preview",
+	chapters: "Chapters",
+	chaptersCount: "{{total}} chapters",
+	chaptersEmpty: "No chapters",
+	chapterDefault: "Chapter",
+	chapterLabel: "Ch. {{chapter}}",
+	chapterRead: "Read",
+	chapterProgress: "{{current}}/{{total}}",
+	extracting: "Preparing pages…",
+} as const
