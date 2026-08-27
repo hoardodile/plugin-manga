@@ -126,6 +126,30 @@ there would make the plugin stop matching its own fixture.
 - hoardodile **≥ 0.1.1** — the built-in plugin marketplace
   (**Settings → Marketplace**) and the batched asset-download API
   (`download([…])`) when the manifest declares `"download": true`.
+  The marketplace's Intro and Release notes tabs and release intro
+  assets are read by newer builds; older builds still list and install
+  the plugin normally.
+- `"minAppVersion"` in `manifest.json` declares the lowest hoardodile
+  release this plugin runs on. Hosts below it refuse to install or update
+  the plugin (the marketplace gates the install/update entries and zip
+  uploads are blocked with an explanation), so bump it only when the
+  plugin really needs a newer app. Omit it for plugins that support every
+  release.
 - This plugin's version is independent of the hoardodile release
-  version.
+  version; bump it on user-visible changes.
 - Dev loop: Node ≥ 24, pnpm 11.
+
+## Publishing an introduction
+
+The marketplace detail view shows a per-release **Intro** tab. Ship one
+markdown file per supported language at the repository root, named
+`intro.<locale>.md` (e.g. `intro.en.md`, `intro.zh.md`) — `release.yml`
+uploads them alongside the zip, so **each release carries its own
+introduction** and every version shows independent notes. Use the app's
+supported language codes as file names (`en`, `zh`, `ja`, `de`, `es`) —
+a region-coded name like `intro.zh-CN.md` only matches a UI language
+resolved to that exact code, so `intro.zh.md` is what Chinese users see.
+
+The app resolves the intro for the user's UI language (exact locale → base
+language → `en` → the only shipped language); the release body always shows
+in the **Release notes** tab.

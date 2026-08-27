@@ -1,0 +1,18 @@
+export default {
+	modeScroll: "スクロール",
+	modePaged: "ページ送り",
+	commentPlaceholder: "このページにメッセージを書く",
+	commentSend: "送信",
+	page: "ページ",
+	pageCount: "/ {{total}}",
+	showOriginal: "原寸表示",
+	showPreview: "プレビュー表示",
+	chapters: "目次",
+	chaptersCount: "全{{total}}話",
+	chaptersEmpty: "章がありません",
+	chapterDefault: "第1話",
+	chapterLabel: "第{{chapter}}話",
+	chapterRead: "既読",
+	chapterProgress: "{{current}}/{{total}}",
+	extracting: "ページを準備中…",
+} as const

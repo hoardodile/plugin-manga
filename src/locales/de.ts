@@ -1,0 +1,18 @@
+export default {
+	modeScroll: "Scrollen",
+	modePaged: "Seitenweise",
+	commentPlaceholder: "Nachricht für diese Seite schreiben",
+	commentSend: "Senden",
+	page: "Seite",
+	pageCount: "/ {{total}}",
+	showOriginal: "Original anzeigen",
+	showPreview: "Vorschau anzeigen",
+	chapters: "Kapitel",
+	chaptersCount: "{{total}} Kapitel",
+	chaptersEmpty: "Keine Kapitel",
+	chapterDefault: "Kapitel 1",
+	chapterLabel: "Kap. {{chapter}}",
+	chapterRead: "Gelesen",
+	chapterProgress: "{{current}}/{{total}}",
+	extracting: "Seiten werden vorbereitet…",
+} as const

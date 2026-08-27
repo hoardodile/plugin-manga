@@ -2,7 +2,8 @@
 	"id": "c9cf1c0a-2a99-44fe-ac71-4068bea2fabf",
 	"name": "Manga",
 	"description": "Manga reader with chapters, scroll / paged modes, per-page messages and position restore.",
-	"version": "0.1.0",
+	"version": "0.1.1",
+	"minAppVersion": "0.1.1",
 	"icon": "book-2",
 	"permissions": {
 		"sourceMeta": true,
@@ -14,31 +15,52 @@
 	"i18n": {
 		"name": {
 			"en": "Manga",
-			"zh": "漫画"
+			"zh": "漫画",
+			"ja": "漫画",
+			"de": "Manga",
+			"es": "Manga"
 		},
 		"description": {
 			"en": "Manga reader with chapters, scroll / paged modes, per-page messages and position restore.",
-			"zh": "漫画阅读器，支持章节、滚动/翻页模式、页内留言与阅读进度恢复。"
+			"zh": "漫画阅读器，支持章节、滚动/翻页模式、页内留言与阅读进度恢复。",
+			"ja": "章ごとに読む漫画リーダー。スクロール/ページ送りモード、ページごとのメッセージ、読書位置の復元に対応。",
+			"de": "Manga-Reader mit Kapiteln, Scroll- und Seitenmodus, Nachrichten pro Seite und Wiederherstellung der Leseposition.",
+			"es": "Lector de manga con capítulos, modos de desplazamiento y paginado, mensajes por página y restauración de la posición."
 		},
 		"imageKindLabel": {
 			"en": "Image",
-			"zh": "图片"
+			"zh": "图片",
+			"ja": "画像",
+			"de": "Bild",
+			"es": "Imagen"
 		},
 		"animationKindLabel": {
 			"en": "Animation",
-			"zh": "动图"
+			"zh": "动图",
+			"ja": "アニメーション",
+			"de": "Animation",
+			"es": "Animación"
 		},
 		"anchorLabel": {
 			"en": "P",
-			"zh": "页"
+			"zh": "页",
+			"ja": "ページ",
+			"de": "S.",
+			"es": "Pág."
 		},
 		"chapterUnit": {
 			"en": "Ch.",
-			"zh": "话"
+			"zh": "话",
+			"ja": "話",
+			"de": "Kap.",
+			"es": "Cap."
 		},
 		"chapterCountLabel": {
 			"en": "chapters",
-			"zh": "话"
+			"zh": "话",
+			"ja": "話",
+			"de": "Kapitel",
+			"es": "capítulos"
 		}
 	},
 	"ui": {
