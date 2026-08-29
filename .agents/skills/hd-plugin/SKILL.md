@@ -72,11 +72,15 @@ lives in `references/`.
      and upload in **Settings → Plugins**; the app validates, installs,
      and rescans. The archive channel is **zip-only** — any other
      format is rejected by the installer.
-   - **Marketplace.** `hoardodile plugin package` produces
-     `release/<id>-<version>.zip` plus a `.sha256` sidecar, then push a
-     tag `v<version>` — the template's `release.yml` builds, packages,
-     and publishes the GitHub release (zip + sha256 + the `intro.*.md`
-     assets). Add the repository address to a registry `registry.json`
+   - **Marketplace.** `pnpm release <version>` — release-it bumps
+     `package.json` and `manifest.json` (in lockstep via
+     `scripts/sync-version.mjs`), writes `CHANGELOG.md`, commits
+     `chore(release): v<version>`, tags `v<version>` and pushes; the
+     tag-triggered `release.yml` builds, runs `hoardodile plugin
+     package` (`release/<id>-<version>.zip` + a `.sha256` sidecar), and
+     publishes the GitHub release (zip + sha256 + the `intro.*.md`
+     assets). Pushing the tag by hand still works as a fallback. Add the
+     repository address to a registry `registry.json`
      (built-in default: `hoardodile/marketplace`) and the app's
      **Settings → Marketplace** lists and installs it. Declare
      `minAppVersion` honestly: hosts below it refuse install/update

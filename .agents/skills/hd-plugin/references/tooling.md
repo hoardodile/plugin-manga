@@ -2,7 +2,7 @@
 
 ## Getting the SDK (bootstrap)
 
-The `@hoardodile/*` release set is on npm (0.1.2): the SDK closure
+The `@hoardodile/*` release set is on npm (0.1.3): the SDK closure
 (`sdk-{types,web,react,server}`, `ui`, `i18n`) plus the terminal
 packages (`cli`, `host`, `host-web`, `workbench`) and the
 `create-plugin` scaffolder. Install from the registry directly — no
@@ -41,7 +41,8 @@ SECURITY.md            private-advisory reporting policy
 Standard scripts (template): `dev` = `hoardodile plugin dev`;
 `build` = `hoardodile plugin build`; `watch` = `… --watch`;
 `test` = `vitest run`; `detect:smoke` = `hoardodile plugin run detect
-testdata --plugin-dir dist`; `lint` = `tsc --noEmit`. Runtime
+testdata --plugin-dir dist`; `lint` = `tsc --noEmit`; `release` = `node
+scripts/release.mjs` (release-it one-click publish). Runtime
 dependencies: `@hoardodile/sdk-{types,server,react}` (+ `react`,
 `react-dom`, and `@hoardodile/ui` for UI); devDependencies:
 `@hoardodile/cli`, `@hoardodile/host`, `@hoardodile/host-web`,
@@ -159,7 +160,7 @@ registry repo's `registry.json`, which lists plugin repository addresses:
 { "version": 1, "plugins": ["https://github.com/<owner>/<repo>"] }
 ```
 
-Publishing is a tag, not a build:
+Publishing is one command on `main` with a clean working tree:
 
 1. `hoardodile plugin package` (or the release workflow) produces
    `release/<id>-<version>.zip` + `.<sha256>`.
@@ -170,11 +171,17 @@ Publishing is a tag, not a build:
    always shows in **Release notes**. Use the app's language codes as
    the file names (`intro.en.md`, `intro.zh.md`, `intro.ja.md`,
    `intro.de.md`, `intro.es.md`).
-3. Push a tag `v<version>` matching `manifest.json` — the template's
-   `.github/workflows/release.yml` builds, runs `plugin package`, and
-   creates the GitHub release with the zip, the sha256 and every
-   `intro.*.md` asset.
+3. `pnpm release <version>` — release-it bumps `package.json` AND
+   `manifest.json` (kept in lockstep via `scripts/sync-version.mjs`),
+   writes `CHANGELOG.md` from Conventional Commits, commits
+   `chore(release): v<version>`, tags `v<version>` and pushes. The
+   tag-triggered `.github/workflows/release.yml` then builds, runs the
+   package step, and creates the GitHub release with the zip, the sha256
+   and every `intro.*.md` asset.
 4. Add the repository address to your registry's `registry.json`.
+
+Pushing the tag by hand still works as a fallback:
+`git tag v<version> && git push origin v<version>`.
 
 Requirements: all repos are public; tags follow `v<version>`. The app
 caches the catalog for 10 minutes and honors the user's proxy config;
