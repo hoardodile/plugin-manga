@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.3](https://github.com/hoardodile/plugin-manga/compare/v0.1.2...v0.1.3) (2026-08-30)
+
+### Features
+
+* align with hoardodile 0.1.5 — SDK ^0.1.5 (v0.1.3) ([d91d492](https://github.com/hoardodile/plugin-manga/commit/d91d492be058c69a53838452987a050724b5a33a))
+
 ## [0.1.2](https://github.com/hoardodile/plugin-manga/compare/v0.1.1...v0.1.2) (2026-08-29)
 
 ### Features
