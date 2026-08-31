@@ -18,8 +18,8 @@ describe("manifest / version consistency", () => {
 		expect(manifest.version).toBe(pkg.version)
 	})
 
-	it("declares a minAppVersion aligned to the app release (0.1.5)", () => {
+	it("declares a minAppVersion aligned to the app release (0.1.6)", () => {
 		// The plugin contract: hosts below this version refuse install/update.
-		expect(manifest.minAppVersion).toBe("0.1.5")
+		expect(manifest.minAppVersion).toBe("0.1.6")
 	})
 })

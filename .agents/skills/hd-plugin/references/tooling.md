@@ -2,7 +2,7 @@
 
 ## Getting the SDK (bootstrap)
 
-The `@hoardodile/*` release set is on npm (0.1.3): the SDK closure
+The `@hoardodile/*` release set is on npm (0.1.6): the SDK closure
 (`sdk-{types,web,react,server}`, `ui`, `i18n`) plus the terminal
 packages (`cli`, `host`, `host-web`, `workbench`) and the
 `create-plugin` scaffolder. Install from the registry directly — no
@@ -18,7 +18,7 @@ pnpm dlx create-hoardodile-plugin <name>   # or: hoardodile plugin create <name>
   the registry. A 0.x caret is effectively pinned — bump the spec to
   adopt a newer SDK release.
 
-## Project anatomy (from the template plugin)
+## Project anatomy (from the [template plugin](../../../plugins/template))
 
 ```
 manifest.json          identity + permissions + ui contracts
@@ -31,7 +31,7 @@ src/
   index.css            entry styles (e.g. @import "tailwindcss")
   __tests__/           vitest suites
 testdata/              sample resources for `plugin dev`
-intro.<locale>.md      per-release marketplace introduction (see below)
+README.md / README.<locale>.md   per-release marketplace readme — bare `README.md` is the fallback (see below)
 CONTRIBUTING.md        dev loop, releases, marketplace publishing
 SECURITY.md            private-advisory reporting policy
 .github/               CI, dependabot, issue templates, release workflow
@@ -41,10 +41,9 @@ SECURITY.md            private-advisory reporting policy
 Standard scripts (template): `dev` = `hoardodile plugin dev`;
 `build` = `hoardodile plugin build`; `watch` = `… --watch`;
 `test` = `vitest run`; `detect:smoke` = `hoardodile plugin run detect
-testdata --plugin-dir dist`; `lint` = `tsc --noEmit`; `release` = `node
-scripts/release.mjs` (release-it one-click publish). Runtime
+testdata --plugin-dir dist`; `lint` = `tsc --noEmit`. Runtime
 dependencies: `@hoardodile/sdk-{types,server,react}` (+ `react`,
-`react-dom`, and `@hoardodile/ui` for UI); devDependencies:
+`react-dom`, and [`@hoardodile/ui`](https://www.npmjs.com/package/@hoardodile/ui) for UI); devDependencies:
 `@hoardodile/cli`, `@hoardodile/host`, `@hoardodile/host-web`,
 `@hoardodile/workbench` + the usual Vite/Vitest/TS toolchain.
 
@@ -109,6 +108,16 @@ hoardodile plugin dev             # watch-build + workbench (http://127.0.0.1:51
   not verified, so `resolveAssetUrl` works unmodified. The same policy
   subset applies: http(s) only, ≤5 redirects, `WORKBENCH_VAULT_MAX_BYTES`
   cap (default 200 MiB), optional sha256 pin, atomic write.
+- **Plugin state in the workbench.** The workbench previews your plugin
+  against the real library **read-only**, so its stored `prefs` (settings)
+  and per-resource `cache` are seeded from the library. To develop from a
+  clean slate, open **Configure → Plugin state**: **Reset settings**
+  empties the plugin's prefs, **Clear cache** empties the current
+  resource's cache, and **Restore from library** brings the stored values
+  back (the reader reloads on each action). The cleared state is a
+  workbench-local override (localStorage), so it survives the Reload
+  button and resource switches until you restore — your real library is
+  never written to.
 
 ## Test data and fixtures
 
@@ -153,39 +162,42 @@ Plugins.
 
 ## Publishing to the marketplace
 
-The built-in registry is `hoardodile/marketplace`; the app reads a
+The built-in registry is [`hoardodile/marketplace`](https://github.com/hoardodile/marketplace); the app reads a
 registry repo's `registry.json`, which lists plugin repository addresses:
 
 ```json
 { "version": 1, "plugins": ["https://github.com/<owner>/<repo>"] }
 ```
 
-Publishing is one command on `main` with a clean working tree:
+Publishing is a tag, not a build:
+
+The template ships a one-click path: `pnpm release <version>` (release-it)
+bumps `package.json` **and** `manifest.json` in lockstep
+(`scripts/sync-version.mjs`), writes `CHANGELOG.md`, commits
+`chore(release): v<version>`, tags and pushes — then the tag triggers the
+same `release.yml` below. Pushing the tag by hand still works as a
+fallback (`git tag v<version> && git push origin v<version>`), but the
+tag must match `v<manifest.version>` or the workflow fails.
 
 1. `hoardodile plugin package` (or the release workflow) produces
    `release/<id>-<version>.zip` + `.<sha256>`.
-2. Ship `intro.<locale>.md` files at the repo root for the languages you
-   support — the marketplace detail view shows the release's **Intro**
-   tab, resolved for the user's UI language (exact locale → base
-   language → `en` → the only shipped language), and the release body
-   always shows in **Release notes**. Use the app's language codes as
-   the file names (`intro.en.md`, `intro.zh.md`, `intro.ja.md`,
-   `intro.de.md`, `intro.es.md`).
-3. `pnpm release <version>` — release-it bumps `package.json` AND
-   `manifest.json` (kept in lockstep via `scripts/sync-version.mjs`),
-   writes `CHANGELOG.md` from Conventional Commits, commits
-   `chore(release): v<version>`, tags `v<version>` and pushes. The
-   tag-triggered `.github/workflows/release.yml` then builds, runs the
-   package step, and creates the GitHub release with the zip, the sha256
-   and every `intro.*.md` asset.
+2. Ship a bare `README.md` fallback plus a `README.<locale>.md` file per
+   extra language in the `readme/` folder — the marketplace detail view
+   shows the release's **Readme** tab, resolved for the user's UI language
+   (exact locale → base language → the `README.md` fallback), and the
+   release body always shows in **Release notes**. `README.md` normally
+   carries the English text, so no `README.en.md` is needed; use the app's
+   language codes for the extra files (`README.zh.md`, `README.ja.md`,
+   `README.de.md`, `README.es.md`).
+3. Push a tag `v<version>` matching `manifest.json` — the template's
+   [`.github/workflows/release.yml`](../../../plugins/template/.github/workflows/release.yml) builds, runs `plugin package`,
+   gates the `readme/` folder with `pnpm readme:check`, and creates the
+   GitHub release with the zip, the sha256 and every `README.*.md` asset.
 4. Add the repository address to your registry's `registry.json`.
-
-Pushing the tag by hand still works as a fallback:
-`git tag v<version> && git push origin v<version>`.
 
 Requirements: all repos are public; tags follow `v<version>`. The app
 caches the catalog for 10 minutes and honors the user's proxy config;
 installs/updates are user-confirmed downloads of the release zip, and
 hosts below the plugin's `minAppVersion` hide the entries. The
-**Bundled plugins** section restores ships-with-app plugins a user
-uninstalled — offline.
+**Bundled plugins** section (Settings → Plugins) restores
+ships-with-app plugins a user uninstalled — offline.

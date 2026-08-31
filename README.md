@@ -123,10 +123,10 @@ there would make the plugin stop matching its own fixture.
 
 ## Requirements
 
-- hoardodile **≥ 0.1.3** — the built-in plugin marketplace
+- hoardodile **≥ 0.1.6** — the built-in plugin marketplace
   (**Settings → Marketplace**) and the batched asset-download API
   (`download([…])`) when the manifest declares `"download": true`.
-  The marketplace's Intro and Release notes tabs and release intro
+  The marketplace's Readme and Release notes tabs and release readme
   assets are read by newer builds; older builds still list and install
   the plugin normally.
 - `"minAppVersion"` in `manifest.json` declares the lowest hoardodile
@@ -173,17 +173,26 @@ git tag v<version> && git push origin v<version>
 Local installs (zip upload in **Settings → Plugins**) still work for
 private packages.
 
-## Publishing an introduction
+## Publishing a readme
 
-The marketplace detail view shows a per-release **Intro** tab. Ship one
-markdown file per supported language at the repository root, named
-`intro.<locale>.md` (e.g. `intro.en.md`, `intro.zh.md`) — `release.yml`
-uploads them alongside the zip, so **each release carries its own
-introduction** and every version shows independent notes. Use the app's
-supported language codes as file names (`en`, `zh`, `ja`, `de`, `es`) —
-a region-coded name like `intro.zh-CN.md` only matches a UI language
-resolved to that exact code, so `intro.zh.md` is what Chinese users see.
+The marketplace detail view shows a per-release **Readme** tab. Ship the
+readme markdown in the **`readme/` folder** as a bare **`README.md`**
+fallback, plus one `README.<locale>.md` file per extra language (e.g.
+`readme/README.md`, `readme/README.zh.md`) — `release.yml` uploads the whole
+folder alongside the zip, so **each release carries its own readme** and
+every version shows independent notes.
+`README.md` is the fallback the app shows for any language without a
+specific file, so English normally lives there and you do **not** need a
+`README.en.md`. Use the app's supported language codes for the extra files
+(`zh`, `ja`, `de`, `es`) — a region-coded name like `README.zh-CN.md` only
+matches a UI language resolved to that exact code, so `README.zh.md` is what
+Chinese users see.
 
-The app resolves the intro for the user's UI language (exact locale → base
-language → `en` → the only shipped language); the release body always shows
+`pnpm readme:check` (run by `release.yml` before publishing) gates this: it
+fails the release if `readme/` is absent-and-required, is not flat, ships no
+`README.md` / `README.<locale>.md`, or references an image by a
+nested/missing path.
+
+The app resolves the readme for the user's UI language (exact locale → base
+language → the `README.md` fallback); the release body always shows
 in the **Release notes** tab.

@@ -11,11 +11,11 @@ metadata:
 
 A hoardodile plugin's iframe is a **surface inside the host app**, not a
 separate product: it should feel like the app's own viewer. The design
-system ships as a package — `@hoardodile/ui`, "the design-system
+system ships as a package — [`@hoardodile/ui`](https://www.npmjs.com/package/@hoardodile/ui), "the design-system
 component library for hoardodile (the host app and plugin iframes
 alike)". All tokens below are real, exported names from that package and
 its `theme.css`; verify anything you are unsure of against a hoardodile
-checkout (`packages/ui/src/styles/theme.css`, `packages/ui/src/viewport.ts`).
+checkout ([`packages/ui/src/styles/theme.css`](../../packages/ui/src/styles/theme.css), [`packages/ui/src/viewport.ts`](../../packages/ui/src/viewport.ts)).
 
 ## When to Apply
 
@@ -229,6 +229,14 @@ auto theme/font/icon-style following through the SDK.
 
 - The plugin owns its iframe's internals only — the app's shell
   (sidebar/panel/caption strip, single scroll container) is the host's.
+- **Fullscreen is host-owned by default — don't implement your own.**
+  The app's preview provides a shared browser-Fullscreen toggle for the
+  plugin iframe (`useContainerFullscreen`/`FullscreenButton` in
+  `apps/web/src/features/res/components/ResPreviewDialog.tsx`); render
+  your viewer normally and let the host handle it. The only exception:
+  a specific content region that genuinely needs its own fullscreen
+  (e.g. a media viewer fullscreening one image or video) may fullscreen
+  just that element — never the whole plugin surface.
 - Padding on a 4px grid (4/8/12/16/24/32/48/64); pages 32–40, cards
   16–24, list rows fixed height with no vertical margins.
 - Three tonal surfaces: canvas carries everything, fills create

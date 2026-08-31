@@ -1,10 +1,10 @@
 ---
 name: hd-plugin
-description: Author hoardodile content plugins — manifest, server hooks, iframe client, and the plugin toolchain. Use when building, extending, or debugging a hoardodile plugin, adding a new resource format, or wiring detect/sourceMeta/searchMeta/coverLocal/listFiles/imageHashes, or publishing a plugin to the marketplace.
+description: Author hoardodile content plugins — manifest, server hooks, iframe client, and the plugin toolchain. Use when building, extending, or debugging a hoardodile plugin, adding a new resource format, or wiring detect/sourceMeta/searchMeta/coverLocal/listFiles/imageHashes/onInstall, setting a resource's permanent cover via the client uploadCover, or publishing a plugin to the marketplace.
 license: MIT
 metadata:
   author: hoardodile
-  version: "1.3.0"
+  version: "1.5.0"
 ---
 
 # Hoardodile Plugin Development
@@ -36,7 +36,7 @@ lives in `references/`.
 ## Workflow
 
 1. **Get the SDK.** The `@hoardodile/*` release set is on npm
-   (0.1.2) — `pnpm dlx create-hoardodile-plugin <name>` scaffolds a
+   (0.1.6) — `pnpm dlx create-hoardodile-plugin <name>` scaffolds a
    plugin prewired to the published SDK. Registry install only — no
    tarballs or `file:` overrides. Full details:
    `references/tooling.md`.
@@ -58,7 +58,9 @@ lives in `references/`.
 4. **Client side.** `src/hooks.ts` declares the typed API pair
    (`definePluginAPI`), `src/render.tsx` mounts it
    (`createPluginRoot`). Read files, resolve URLs, write anchors and
-   messages through the API. `references/client.md`.
+   messages, and set the resource's permanent cover via
+   `uploadCover({ file, filename })` through the API.
+   `references/client.md`.
 5. **Dev loop.** `hoardodile plugin dev` builds on watch and serves the
    workbench at `http://127.0.0.1:5199`, feeding real sandbox hook
    results into your iframe — no hoardodile server needed.
@@ -72,16 +74,12 @@ lives in `references/`.
      and upload in **Settings → Plugins**; the app validates, installs,
      and rescans. The archive channel is **zip-only** — any other
      format is rejected by the installer.
-   - **Marketplace.** `pnpm release <version>` — release-it bumps
-     `package.json` and `manifest.json` (in lockstep via
-     `scripts/sync-version.mjs`), writes `CHANGELOG.md`, commits
-     `chore(release): v<version>`, tags `v<version>` and pushes; the
-     tag-triggered `release.yml` builds, runs `hoardodile plugin
-     package` (`release/<id>-<version>.zip` + a `.sha256` sidecar), and
-     publishes the GitHub release (zip + sha256 + the `intro.*.md`
-     assets). Pushing the tag by hand still works as a fallback. Add the
-     repository address to a registry `registry.json`
-     (built-in default: `hoardodile/marketplace`) and the app's
+   - **Marketplace.** `hoardodile plugin package` produces
+     `release/<id>-<version>.zip` plus a `.sha256` sidecar, then push a
+     tag `v<version>` — the template's `release.yml` builds, packages,
+     and publishes the GitHub release (zip + sha256 + the `README.*.md` assets; a bare `README.md` is the fallback)
+     Add the repository address to a registry `registry.json`
+     (built-in default: [`hoardodile/marketplace`](https://github.com/hoardodile/marketplace)) and the app's
      **Settings → Marketplace** lists and installs it. Declare
      `minAppVersion` honestly: hosts below it refuse install/update
      (marketplace entries and zip uploads are gated). To ship a plugin
@@ -89,7 +87,7 @@ lives in `references/`.
      build list and the runtime seed discovery are both directory-driven
      (`scripts/lib/plugin-channels.mjs`); bundled seeds uninstalled by a
      user stay uninstalled per library and are restored (offline) from
-     **Settings → Marketplace → Bundled plugins**.
+     **Settings → Plugins → Bundled plugins**.
 
 ## SDK Closure
 
@@ -97,7 +95,7 @@ Plugin **runtime** code may only import `@hoardodile/{ui,sdk-types,sdk-server,sd
 The terminal packages — `@hoardodile/cli`, `@hoardodile/host`,
 `@hoardodile/host-web`, `@hoardodile/workbench` — are **never** runtime
 dependencies; use them as devDependencies only (`runPluginHook`,
-`createDirectoryResourceAPI`, workbench). `@hoardodile/ui` is the only
+`createDirectoryResourceAPI`, workbench). [`@hoardodile/ui`](https://www.npmjs.com/package/@hoardodile/ui) is the only
 component library; import per-subpath (`components/*`, `theme.css`,
 `hooks/*`, `lib/*`, `viewport`) so bundles stay small. Keep the wire
 protocol in mind: plugins stamp every outbound message with
@@ -120,16 +118,16 @@ types from the root entry.
 
 | Plugin | What it teaches |
 | --- | --- |
-| `plugins/template` (hoardodile repo) | The minimal end-to-end path: `detect` → `sourceMeta` → iframe render, fixture tests, `detect:smoke`. Start here. |
-| `plugins/gallery` (hoardodile repo) | The official media plugin: multi-kind cards (`ui.card.<kind>`), video/audio skipping + probes, danmaku/message/imageHashes permissions, `testdata` generation script, bench baseline. |
-| `plugins/file` (hoardodile repo) | The built-in fallback plugin: a resource as a browseable file tree. |
-| `plugins/pdf` (hoardodile repo) | Official seed plugin, the newest end-to-end example: multi-candidate `detect`, range-streamed binary via the host file URL, a worker blob fallback for the sandboxed opaque origin, per-page anchors, and structural fixture verification (`testdata:verify`). |
+| [`plugins/template`](../../plugins/template) (hoardodile repo) | The minimal end-to-end path: `detect` → `sourceMeta` → iframe render, fixture tests, `detect:smoke`. Start here. |
+| [`plugins/gallery`](../../plugins/gallery) (hoardodile repo) | The official media plugin: multi-kind cards (`ui.card.<kind>`), video/audio skipping + probes, danmaku/message/imageHashes permissions, `testdata` generation script, bench baseline. |
+| [`plugins/file`](../../plugins/file) (hoardodile repo) | The built-in fallback plugin: a resource as a browseable file tree. |
+| [`plugins/pdf`](../../plugins/pdf) (hoardodile repo) | Official seed plugin, the newest end-to-end example: multi-candidate `detect`, range-streamed binary via the host file URL, a worker blob fallback for the sandboxed opaque origin, per-page anchors, and structural fixture verification (`testdata:verify`). |
 
 ## Resources
 
 - The contract is documented inline in the SDK:
-  `plugins/sdk-types/src/plugin-definition.ts` (hooks, definitions,
+  [`plugins/sdk-types/src/plugin-definition.ts`](../../plugins/sdk-types/src/plugin-definition.ts) (hooks, definitions,
   fixtures) — the authoritative reference behind `references/server.md`.
-- Plugin UI: `@hoardodile/ui` (see `hd-plugin-design`).
+- Plugin UI: [`@hoardodile/ui`](https://www.npmjs.com/package/@hoardodile/ui) (see `hd-plugin-design`).
 - `references/tooling.md` covers the registry bootstrap, the plugin
   CLI/workbench toolchain and the test/deploy loop.
