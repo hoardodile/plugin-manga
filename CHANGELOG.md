@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.4](https://github.com/hoardodile/plugin-manga/compare/v0.1.3...v0.1.4) (2026-08-31)
+
+### Bug Fixes
+
+* align to hoardodile 0.1.6 (SDK ^0.1.6, readme/ marketplace readme, hd-plugin skill v1.5.0) ([f1fdcf7](https://github.com/hoardodile/plugin-manga/commit/f1fdcf7c63463b0b9d35ef0c816cc690605f8082))
+
 ## [0.1.3](https://github.com/hoardodile/plugin-manga/compare/v0.1.2...v0.1.3) (2026-08-30)
 
 ### Features
