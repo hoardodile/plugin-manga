@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/hoardodile/plugin-manga/compare/v0.1.4...v0.1.5) (2026-09-01)
+
+### Bug Fixes
+
+* archive cards show page count and dimensions; archive sourceMeta returns previews ([5c572fb](https://github.com/hoardodile/plugin-manga/commit/5c572fbd13ca892515b7c96fcda33b639b22f78a))
+* repair real-sample download and verify archive hooks through the SDK ([596aed7](https://github.com/hoardodile/plugin-manga/commit/596aed7d236c0048fbd6a817d3c4e4cb4db69d05))
+
 ## [0.1.4](https://github.com/hoardodile/plugin-manga/compare/v0.1.3...v0.1.4) (2026-08-31)
 
 ### Bug Fixes
