@@ -17,6 +17,6 @@ per-page messages, and reading-position restore — in the app's own viewer.
 
 ## Requirements
 
-- hoardodile ≥ 0.1.6 (see the repository README for details).
+- hoardodile ≥ 0.1.8 (see the repository README for details).
 - Trust the repository before installing — plugin code runs server-side in a
   restricted sandbox.

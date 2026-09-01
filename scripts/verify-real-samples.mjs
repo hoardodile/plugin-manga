@@ -18,11 +18,7 @@
  *
  * Usage: node scripts/verify-real-samples.mjs
  */
-import {
-	existsSync,
-	mkdtempSync,
-	readFileSync,
-} from "node:fs"
+import { existsSync, mkdtempSync, readFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
@@ -43,9 +39,7 @@ if (!existsSync(DIST_MAIN)) {
 	process.exit(1)
 }
 
-const plugin = (
-	await import(pathToFileURL(DIST_MAIN).href)
-).default
+const plugin = (await import(pathToFileURL(DIST_MAIN).href)).default
 
 const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"))
 let failed = 0
@@ -58,7 +52,9 @@ console.log("── real sample verification ───────────�
 for (const sample of manifest.samples) {
 	const dir = join(REAL_DIR, sample.dir)
 	if (!existsSync(join(dir, sample.file))) {
-		console.log(`✕ ${sample.name} — sample file missing (run fetch-real-samples.mjs)`)
+		console.log(
+			`✕ ${sample.name} — sample file missing (run fetch-real-samples.mjs)`,
+		)
 		failed++
 		continue
 	}
@@ -72,7 +68,8 @@ for (const sample of manifest.samples) {
 	const row = { name: sample.name, features: sample.features.join(",") }
 	try {
 		const detect = await plugin.detect(api)
-		row.detect = detect.ok === true ? "ok" : (detect.reasons?.join(",") ?? "fail")
+		row.detect =
+			detect.ok === true ? "ok" : (detect.reasons?.join(",") ?? "fail")
 		const meta = await plugin.sourceMeta?.(api)
 		row.previews = meta?.previews?.length ?? 0
 		row.width = meta?.width

@@ -20,6 +20,6 @@ posición de lectura en el visor de la app.
 
 ## Requisitos
 
-- hoardodile ≥ 0.1.6 (consulta el README del repositorio).
+- hoardodile ≥ 0.1.8 (consulta el README del repositorio).
 - Confía en el repositorio antes de instalarlo: el código del plugin se
   ejecuta en el servidor dentro de un sandbox restringido.

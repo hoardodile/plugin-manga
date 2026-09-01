@@ -13,7 +13,7 @@ The app validates it on install (Settings → Plugins) and rescans.
   "name": "My Plugin",           // REQUIRED — user-facing (i18n overrides it)
   "description": "What it claims.",
   "version": "0.0.0",
-  "minAppVersion": "0.1.6",      // optional — lowest hoardodile release this
+  "minAppVersion": "0.1.8",      // optional — lowest hoardodile release this
                                  //   plugin runs on; absent = every version
   "icon": "box",                 // optional — Solar glyph name (three weights,
                                  //   follows the user's icon style preference)
@@ -29,7 +29,7 @@ The app validates it on install (Settings → Plugins) and rescans.
 **`version`**: the plugin's own version; the app shows it (Settings →
 Plugins) — bump it on user-visible changes.
 **`minAppVersion`**: the lowest hoardodile release the plugin runs on
-(e.g. `"0.1.6"`). Hosts below it refuse to install or update the plugin —
+(e.g. `"0.1.8"`). Hosts below it refuse to install or update the plugin —
 the marketplace hides the install/update entries and the zip upload is
 blocked with an explanation — so declare it honestly and bump it only when
 the plugin really needs a newer app. Omit it for plugins that support every
@@ -53,7 +53,7 @@ not wired, and the plugin's calls are rejected by the bridge.
 | `danmaku` | Read/create danmaku (bullet comments) for the resource. |
 | `message` | Read/create anchored messages for the resource. |
 | `imageHashes` | `imageHashes` results participate in duplicate detection. |
-| `container` | `listContainer`/`extractArchive` (archive entries) work; the sandbox denies these APIs without it. |
+| `container` | `listContainer`/`extractArchive` (archive entries) work; the sandbox denies these APIs without it. Use it to read inside archives (`outer!inner`) and to materialize non-zip containers for browser reads. |
 | `download` | The plugin asset vault: `download`/`statAsset`/`readAsset`/`deleteAsset` work (both sides of the plugin), *and* every `download()` call needs your approval in the shared dialog — one batched `download([…])` is ONE dialog listing every item (all-or-nothing, ≤16 items). Denied by default. |
 
 The gallery manifest shows the typical media-plugin set:

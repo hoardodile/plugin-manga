@@ -2,8 +2,8 @@ import { Button } from "@hoardodile/ui/components/button"
 import { Icon } from "@hoardodile/ui/components/icon"
 import { Input } from "@hoardodile/ui/components/input"
 import { useState } from "react"
-import { Plane } from "../icons"
 import { useTranslation } from "../i18n"
+import { Plane } from "../icons"
 import { usePluginAPI } from "./hooks"
 
 const MAX_MANGA_COMMENT_LENGTH = 500

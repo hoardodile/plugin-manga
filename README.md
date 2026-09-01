@@ -144,7 +144,7 @@ there would make the plugin stop matching its own fixture.
 
 ## Requirements
 
-- hoardodile **≥ 0.1.6** — the built-in plugin marketplace
+- hoardodile **≥ 0.1.8** — the built-in plugin marketplace
   (**Settings → Marketplace**) and the batched asset-download API
   (`download([…])`) when the manifest declares `"download": true`.
   The marketplace's Readme and Release notes tabs and release readme

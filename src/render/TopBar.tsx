@@ -89,11 +89,7 @@ export function MangaTopBar(props: MangaTopBarProps) {
 					className={TOOL_BUTTON_CLASS}
 					data-testid="manga-mode-toggle"
 				>
-					{mode === "scroll" ? (
-						<Icon icon={List} />
-					) : (
-						<Icon icon={Gallery} />
-					)}
+					{mode === "scroll" ? <Icon icon={List} /> : <Icon icon={Gallery} />}
 					{t(mode === "scroll" ? "modeScroll" : "modePaged")}
 				</Button>
 				<Button

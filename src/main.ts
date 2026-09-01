@@ -1,10 +1,4 @@
 import {
-	PLUGIN_ANIMATION_SCAN_BATCH,
-	PLUGIN_IMAGE_PROBE_CONCURRENCY,
-} from "@hoardodile/sdk-types/plugin"
-import { SEARCH_META_VERSION } from "@hoardodile/sdk-types/resource"
-
-import {
 	type Detection,
 	definePlugin,
 	type FileType,
@@ -16,6 +10,11 @@ import {
 	mapConcurrent,
 	probeImageFile,
 } from "@hoardodile/sdk-server/helpers"
+import {
+	PLUGIN_ANIMATION_SCAN_BATCH,
+	PLUGIN_IMAGE_PROBE_CONCURRENCY,
+} from "@hoardodile/sdk-types/plugin"
+import { SEARCH_META_VERSION } from "@hoardodile/sdk-types/resource"
 import { classifySource, type MangaSourceShape } from "./core/format.ts"
 import {
 	assignChapters,
@@ -151,11 +150,17 @@ async function archiveSourceMeta(
 	if (imagePaths.length === 0) return undefined
 
 	const previews: MangaPage[] = []
-	let firstDims: { readonly width?: number; readonly height?: number } | undefined
+	let firstDims:
+		| { readonly width?: number; readonly height?: number }
+		| undefined
 	for (const path of imagePaths) {
 		if (previews.length >= PREVIEW_COUNT) break
 		let probed:
-			| { readonly width?: number; readonly height?: number; readonly preview: boolean }
+			| {
+					readonly width?: number
+					readonly height?: number
+					readonly preview: boolean
+			  }
 			| undefined
 		try {
 			probed = await probeImageFile(api, `${archive.filename}!${path}`)
@@ -183,7 +188,10 @@ async function archiveSourceMeta(
 	return {
 		...firstDims,
 		previews,
-		chapterCount: pages.reduce((acc, p) => Math.max(acc, p.chapterIndex + 1), 0),
+		chapterCount: pages.reduce(
+			(acc, p) => Math.max(acc, p.chapterIndex + 1),
+			0,
+		),
 		pageCount: pages.length,
 	}
 }
@@ -310,7 +318,9 @@ async function fileList(
 			return [...assignChapters(pagesFromListing(listing, archive.filename))]
 		}
 		const extraction = await api.extractArchive(archive.filename)
-		return [...assignChapters(pagesFromExtraction(extraction, archive.filename))]
+		return [
+			...assignChapters(pagesFromExtraction(extraction, archive.filename)),
+		]
 	}
 	return pagePagesOf(api)
 }

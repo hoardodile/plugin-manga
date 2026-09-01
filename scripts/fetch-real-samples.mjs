@@ -135,7 +135,9 @@ async function main() {
 			continue
 		}
 		const existing =
-			existsSync(dest) && statSync(dest).isFile() ? statSync(dest).size : undefined
+			existsSync(dest) && statSync(dest).isFile()
+				? statSync(dest).size
+				: undefined
 		if (existing === resolved.size) {
 			console.log(`[samples] ok (cached): ${sample.name}`)
 		} else if (verifyOnly) {

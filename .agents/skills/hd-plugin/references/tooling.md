@@ -2,7 +2,7 @@
 
 ## Getting the SDK (bootstrap)
 
-The `@hoardodile/*` release set is on npm (0.1.6): the SDK closure
+The `@hoardodile/*` release set is on npm (0.1.8): the SDK closure
 (`sdk-{types,web,react,server}`, `ui`, `i18n`) plus the terminal
 packages (`cli`, `host`, `host-web`, `workbench`) and the
 `create-plugin` scaffolder. Install from the registry directly — no
@@ -35,13 +35,19 @@ README.md / README.<locale>.md   per-release marketplace readme — bare `README
 CONTRIBUTING.md        dev loop, releases, marketplace publishing
 SECURITY.md            private-advisory reporting policy
 .github/               CI, dependabot, issue templates, release workflow
+biome.json              formatter + linter (injected by the scaffolder; pnpm format / pnpm lint)
+lefthook.yml            git hooks (commit-msg Conventional Commits, pre-commit biome/tsc)
+AGENTS.md               agent instructions (uppercase, per repo convention)
 .nvmrc / .gitignore    Node 24 pin / artifact ignores
 ```
 
 Standard scripts (template): `dev` = `hoardodile plugin dev`;
 `build` = `hoardodile plugin build`; `watch` = `… --watch`;
 `test` = `vitest run`; `detect:smoke` = `hoardodile plugin run detect
-testdata --plugin-dir dist`; `lint` = `tsc --noEmit`. Runtime
+testdata --plugin-dir dist`; `lint` = `biome check . && tsc --noEmit`;
+`format` = `biome check --write`; `lint-staged` = the pre-commit biome
+pass; `postinstall` installs `lefthook` hooks when the repo has a
+`.git`. Runtime
 dependencies: `@hoardodile/sdk-{types,server,react}` (+ `react`,
 `react-dom`, and [`@hoardodile/ui`](https://www.npmjs.com/package/@hoardodile/ui) for UI); devDependencies:
 `@hoardodile/cli`, `@hoardodile/host`, `@hoardodile/host-web`,
@@ -96,6 +102,16 @@ hoardodile plugin dev             # watch-build + workbench (http://127.0.0.1:51
   `coverLocal`) from the real sandbox and feeds them to the iframe — the
   same context the app would push. Its render cache lives in the
   workdir's `.hoardodile/` (gitignore it). No hoardodile server needed.
+- **Resource-card preview.** The top bar's **Card** button opens a dialog
+  showing a simulated resource card — the plugin's
+  `manifest.ui.card.<kind>` corner templates (`tl`/`bl`/`br`) rendered
+  against the resource (file stats, source/search meta) plus the cover.
+  The dev pipeline sniffs the cover source (`coverLocal`) to determine
+  the kind (`image`/`video`/`audio`, else `default`), so the block
+  matching the cover is used. Iterate on `manifest.ui.card` and
+  `coverLocal`, then reload to see the card — the app's shared
+  `@hoardodile/ui/res-card-template` renderer evaluates the same
+  `{{...}}` grammar in the app and the workbench.
 - **Plugin asset downloads in the workbench** work the same way as the
   app: the same consent dialog (Allow / Deny / remember-this-session),
   backed by the dev server instead of tRPC. Declare `"download": true`
@@ -111,13 +127,12 @@ hoardodile plugin dev             # watch-build + workbench (http://127.0.0.1:51
 - **Plugin state in the workbench.** The workbench previews your plugin
   against the real library **read-only**, so its stored `prefs` (settings)
   and per-resource `cache` are seeded from the library. To develop from a
-  clean slate, open **Configure → Plugin state**: **Reset settings**
-  empties the plugin's prefs, **Clear cache** empties the current
-  resource's cache, and **Restore from library** brings the stored values
-  back (the reader reloads on each action). The cleared state is a
-  workbench-local override (localStorage), so it survives the Reload
-  button and resource switches until you restore — your real library is
-  never written to.
+  clean slate, open the **Settings** dialog → **Plugin state**: **Reset**
+  empties the plugin's prefs, **Clear** empties the current resource's
+  cache, and **Restore from library** brings the stored values back (the
+  reader reloads on each action). The cleared state is a workbench-local
+  override (localStorage), so it survives the Reload button and resource
+  switches until you restore — your real library is never written to.
 
 ## Test data and fixtures
 
