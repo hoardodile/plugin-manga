@@ -1,5 +1,5 @@
 import { createWebPluginAPI, PluginAPIProvider } from "@hoardodile/sdk-react"
-import { render, waitFor } from "@testing-library/react"
+import { act, render, waitFor } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 import { MangaReader } from "../render/MangaReader"
 import type { MangaPage } from "../shared"
@@ -135,5 +135,43 @@ describe("manga render", () => {
 		expect(list.textContent).toContain("Chapter 2")
 		// Top bar still shows its chrome.
 		expect(getByTestId("manga-mode-toggle")).not.toBeNull()
+	})
+
+	it("exposes the reading-mode toggle", async () => {
+		const api = createWebPluginAPI({
+			resource: {
+				...createWebPluginAPI().resource,
+				fileStats: { count: 3 },
+			},
+			useFileList: () => ({
+				data: [page("01.jpg"), page("02.jpg"), page("03.jpg")],
+				isLoading: false,
+				isError: false,
+				error: null,
+			}),
+		})
+		const { findByTestId } = render(wrapWithAPI(api, <MangaReader />))
+		const button = await findByTestId("manga-mode-toggle")
+		expect(button).toHaveAttribute("aria-pressed", "false")
+	})
+
+	it("opens the settings popover", async () => {
+		const api = createWebPluginAPI({
+			resource: {
+				...createWebPluginAPI().resource,
+				fileStats: { count: 3 },
+			},
+			useFileList: () => ({
+				data: [page("01.jpg"), page("02.jpg"), page("03.jpg")],
+				isLoading: false,
+				isError: false,
+				error: null,
+			}),
+		})
+		const { findByTestId } = render(wrapWithAPI(api, <MangaReader />))
+		const trigger = await findByTestId("manga-settings-toggle")
+		act(() => trigger.click())
+		const panel = await findByTestId("manga-settings-panel")
+		expect(panel).not.toBeNull()
 	})
 })

@@ -1,20 +1,29 @@
 import { Button } from "@hoardodile/ui/components/button"
 import { Icon } from "@hoardodile/ui/components/icon"
+import { Input } from "@hoardodile/ui/components/input"
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@hoardodile/ui/components/popover"
 import {
 	Book,
 	ChatRoundDots,
 	ChatRoundLine,
 	Gallery,
-	List,
+	ListVertical,
+	Settings,
 } from "@hoardodile/ui/icons/registry"
 import { useEffect, useState } from "react"
 import { useTranslation } from "../i18n"
-import type { MangaReadingMode } from "../prefs"
+import type { MangaReadingMode, MangaSettings } from "../prefs"
+import { MangaSettingsPopover } from "./SettingsPopover"
 
 /**
  * Reader chrome: chapter label with directory button, page indicator
- * with jump field, reading-mode toggle, comment toggle and the
- * original/preview switch.
+ * with jump field, reading-mode toggle, comment toggle, the
+ * original/preview switch and a settings popover. All surfaces follow
+ * the host theme via design-system tokens.
  */
 export type MangaTopBarProps = {
 	readonly pageIndex: number
@@ -26,14 +35,17 @@ export type MangaTopBarProps = {
 	readonly showComments: boolean
 	readonly useOriginal: boolean
 	readonly showOriginalToggle: boolean
+	readonly settings: MangaSettings
 	readonly onOpenChapters: () => void
 	readonly onToggleMode: () => void
 	readonly onToggleComments: () => void
 	readonly onToggleOriginal: () => void
+	readonly onUpdateSettings: (patch: Partial<MangaSettings>) => void
 	readonly onJump: (index: number) => void
 }
 
-const TOOL_BUTTON_CLASS = "h-7 gap-1 px-2 text-xs text-white hover:bg-white/10"
+const TOOL_BUTTON_CLASS =
+	"h-7 gap-1 px-2 text-xs text-secondary-foreground hover:bg-accent"
 
 export function MangaTopBar(props: MangaTopBarProps) {
 	const {
@@ -46,66 +58,100 @@ export function MangaTopBar(props: MangaTopBarProps) {
 		showComments,
 		useOriginal,
 		showOriginalToggle,
+		settings,
 		onOpenChapters,
 		onToggleMode,
 		onToggleComments,
 		onToggleOriginal,
+		onUpdateSettings,
 		onJump,
 	} = props
 	const { t } = useTranslation()
 	return (
-		<div className="flex items-center justify-between gap-2 border-b border-white/10 bg-black/60 px-3 py-2 text-sm">
-			<div className="flex min-w-0 items-center gap-2">
-				<MangaChapterJumpButton
-					chapterIndex={chapterIndex}
-					chapterCount={chapterCount}
-					chapterTitle={chapterTitle}
-					onOpenChapters={onOpenChapters}
-				/>
-				<MangaPageJumpInput
-					pageIndex={pageIndex}
-					pageCount={pageCount}
-					onJump={onJump}
-				/>
-			</div>
-			<div className="flex items-center gap-1">
-				{showOriginalToggle ? (
+		<div className="h-nav shrink-0 border-b border-border bg-background">
+			<div className="flex h-full items-center justify-between gap-2 px-3">
+				<div className="flex min-w-0 items-center gap-2">
+					<MangaChapterJumpButton
+						chapterIndex={chapterIndex}
+						chapterCount={chapterCount}
+						chapterTitle={chapterTitle}
+						onOpenChapters={onOpenChapters}
+					/>
+					<MangaPageJumpInput
+						pageIndex={pageIndex}
+						pageCount={pageCount}
+						onJump={onJump}
+					/>
+				</div>
+				<div className="flex items-center gap-1">
+					{showOriginalToggle ? (
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							onClick={onToggleOriginal}
+							className={TOOL_BUTTON_CLASS}
+							data-testid="manga-original-toggle"
+						>
+							{useOriginal ? t("showPreview") : t("showOriginal")}
+						</Button>
+					) : null}
 					<Button
 						type="button"
 						variant="ghost"
 						size="sm"
-						onClick={onToggleOriginal}
+						active={mode === "paged"}
+						onClick={onToggleMode}
 						className={TOOL_BUTTON_CLASS}
-						data-testid="manga-original-toggle"
+						data-testid="manga-mode-toggle"
+						aria-pressed={mode === "paged"}
 					>
-						{useOriginal ? t("showPreview") : t("showOriginal")}
+						{mode === "scroll" ? (
+							<Icon icon={ListVertical} />
+						) : (
+							<Icon icon={Gallery} />
+						)}
+						{t(mode === "scroll" ? "modeScroll" : "modePaged")}
 					</Button>
-				) : null}
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					onClick={onToggleMode}
-					className={TOOL_BUTTON_CLASS}
-					data-testid="manga-mode-toggle"
-				>
-					{mode === "scroll" ? <Icon icon={List} /> : <Icon icon={Gallery} />}
-					{t(mode === "scroll" ? "modeScroll" : "modePaged")}
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					onClick={onToggleComments}
-					className={TOOL_BUTTON_CLASS}
-					data-testid="manga-comments-toggle"
-				>
-					{showComments ? (
-						<Icon icon={ChatRoundLine} />
-					) : (
-						<Icon icon={ChatRoundDots} />
-					)}
-				</Button>
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						active={showComments}
+						onClick={onToggleComments}
+						className={TOOL_BUTTON_CLASS}
+						data-testid="manga-comments-toggle"
+						aria-pressed={showComments}
+					>
+						{showComments ? (
+							<Icon icon={ChatRoundLine} />
+						) : (
+							<Icon icon={ChatRoundDots} />
+						)}
+					</Button>
+					<Popover closeOnBlur>
+						<PopoverTrigger
+							render={
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									className={TOOL_BUTTON_CLASS}
+									data-testid="manga-settings-toggle"
+									aria-label={t("settings")}
+								/>
+							}
+						>
+							<Icon icon={Settings} />
+						</PopoverTrigger>
+						<PopoverContent align="end" side="bottom" sideOffset={4}>
+							<MangaSettingsPopover
+								settings={settings}
+								onChange={onUpdateSettings}
+							/>
+						</PopoverContent>
+					</Popover>
+				</div>
 			</div>
 		</div>
 	)
@@ -174,12 +220,13 @@ function MangaPageJumpInput(props: {
 
 	return (
 		<span
-			className="flex items-center gap-1 text-xs text-white/80"
+			className="flex items-center gap-1 text-xs text-muted-foreground"
 			data-testid="manga-page-indicator"
 		>
-			<input
+			<Input
 				type="text"
 				inputMode="numeric"
+				size="sm"
 				value={draft}
 				onFocus={(e) => {
 					setEditing(true)
@@ -195,7 +242,7 @@ function MangaPageJumpInput(props: {
 						e.currentTarget.blur()
 					}
 				}}
-				className="w-12 rounded border border-white/20 bg-transparent px-1 py-0.5 text-center tabular-nums text-white outline-hidden focus:border-white/60"
+				className="w-12 text-center tabular-nums"
 				aria-label={t("page")}
 				data-testid="manga-page-jump-input"
 			/>

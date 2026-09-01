@@ -11,6 +11,7 @@ import {
 	resolveRenderWidth,
 } from "./helpers"
 import { MangaPageCommentOverlay } from "./PageCommentOverlay"
+import { useMangaKeyboard } from "./useMangaKeyboard"
 import {
 	useContainerWidth,
 	useScrollTargetAssert,
@@ -161,6 +162,42 @@ export function MangaScrollView(props: MangaScrollViewProps) {
 		return () => root.removeEventListener("wheel", onWheel)
 	}, [])
 
+	const scrollDown = useCallback(() => {
+		const root = containerRef.current
+		if (root === null) return
+		root.scrollBy({ top: root.clientHeight * 0.9 })
+	}, [])
+	const scrollUp = useCallback(() => {
+		const root = containerRef.current
+		if (root === null) return
+		root.scrollBy({ top: -root.clientHeight * 0.9 })
+	}, [])
+	const scrollToTop = useCallback(() => {
+		containerRef.current?.scrollTo({ top: 0 })
+	}, [])
+	const scrollToBottom = useCallback(() => {
+		const root = containerRef.current
+		if (root === null) return
+		root.scrollTo({ top: root.scrollHeight })
+	}, [])
+	const zoomStep = useCallback((dir: 1 | -1) => {
+		setZoom((z) => clampZoom(z + ZOOM_STEP * dir, MIN_ZOOM, MAX_ZOOM))
+	}, [])
+	const resetZoom = useCallback(() => setZoom(1), [])
+	const keyboardHandlers = useMemo(
+		() => ({
+			prev: scrollUp,
+			next: scrollDown,
+			first: scrollToTop,
+			last: scrollToBottom,
+			zoomIn: () => zoomStep(1),
+			zoomOut: () => zoomStep(-1),
+			fit: resetZoom,
+		}),
+		[scrollUp, scrollDown, scrollToTop, scrollToBottom, zoomStep, resetZoom],
+	)
+	useMangaKeyboard({ handlers: keyboardHandlers, enabled: pages.length > 0 })
+
 	// Width starts at 0 before the first layout (and while the host keeps
 	// the iframe hidden); rendering items then would size every estimate
 	// from a bogus width and guarantee a correction wave once the real
@@ -170,7 +207,7 @@ export function MangaScrollView(props: MangaScrollViewProps) {
 	return (
 		<div
 			ref={containerRef}
-			className="manga-scrollbar relative h-full w-full overflow-y-auto bg-black"
+			className="manga-scrollbar relative h-full w-full overflow-y-auto"
 			style={{ scrollbarGutter: "stable" }}
 			data-testid="manga-scroll-view"
 		>
@@ -238,7 +275,7 @@ function MangaPageImage(props: {
 		>
 			{!loaded && (
 				<div
-					className="absolute inset-0 bg-neutral-800"
+					className="manga-page-skeleton absolute inset-0"
 					data-testid="manga-page-skeleton"
 				>
 					{/* A full-page opacity pulse repaints the whole viewport every

@@ -159,6 +159,14 @@ for (let page = 1; page <= PAGE_COUNT; page++) {
 	)
 }
 
+// A landscape page (aspect >= 1.5) so the paged reader's fit-width and
+// native-spread detection have a real wide page to exercise in the
+// workbench (`pnpm dev`). Sorts after the numeric pages in natural order.
+writeFileSync(
+	join(PAGES_OUT_DIR, "wide.png"),
+	encodePng(600, 340, () => [216, 176, 118]),
+)
+
 // A two-chapter CBZ fixture in its own directory (a resource holds
 // either a page folder or a single archive, never both; a nested
 // directory would also surface in the page fixture's file list):

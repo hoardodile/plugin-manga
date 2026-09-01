@@ -6,6 +6,8 @@ import {
 	buildPerPageComments,
 	clampZoom,
 	estimatePageHeight,
+	layoutScreen,
+	pageAspectOf,
 	pageImageUrl,
 	pageSrcOf,
 	readMangaPreviews,
@@ -210,6 +212,88 @@ describe("estimatePageHeight", () => {
 
 	it("reports zero before the first layout", () => {
 		expect(estimatePageHeight(undefined, 0)).toBe(0)
+	})
+})
+
+describe("pageAspectOf", () => {
+	it("returns the ratio when dimensions are known", () => {
+		expect(pageAspectOf({ width: 600, height: 340 })).toBeCloseTo(600 / 340)
+		expect(pageAspectOf({ width: 240, height: 340 })).toBeCloseTo(240 / 340)
+	})
+
+	it("falls back to the generic portrait aspect without dimensions", () => {
+		expect(pageAspectOf(undefined)).toBe(1.4)
+		expect(pageAspectOf({})).toBe(1.4)
+	})
+})
+
+describe("layoutScreen", () => {
+	it("fits a single page with fit=page (contain)", () => {
+		const layout = layoutScreen({
+			pages: [{ width: 800, height: 1200 }],
+			fit: "page",
+			containerW: 400,
+			containerH: 600,
+		})
+		expect(layout.contentW).toBeCloseTo(400) // width-limited
+		expect(layout.contentH).toBeCloseTo(600)
+		expect(layout.boxes).toHaveLength(1)
+		expect(layout.boxes[0]!.width).toBeCloseTo(layout.contentW)
+	})
+
+	it("fills the width with fit=width and lets height overflow", () => {
+		const layout = layoutScreen({
+			pages: [{ width: 240, height: 340 }],
+			fit: "width",
+			containerW: 400,
+			containerH: 200,
+		})
+		expect(layout.contentW).toBe(400)
+		expect(layout.contentH).toBeCloseTo(400 / (240 / 340))
+		expect(layout.contentH).toBeGreaterThan(200)
+	})
+
+	it("lays a two-page spread side by side", () => {
+		const layout = layoutScreen({
+			pages: [
+				{ width: 240, height: 340 },
+				{ width: 240, height: 340 },
+			],
+			fit: "page",
+			containerW: 800,
+			containerH: 500,
+		})
+		const [a, b] = layout.boxes
+		expect(layout.boxes).toHaveLength(2)
+		expect(a!.height).toBe(b!.height)
+		expect(b!.x).toBeGreaterThan(a!.x)
+		expect(layout.contentW).toBeCloseTo(a!.width + 2 + b!.width)
+	})
+
+	it("mirrors a spread in RTL so the first page sits on the right", () => {
+		const layout = layoutScreen({
+			pages: [
+				{ width: 240, height: 340 },
+				{ width: 240, height: 340 },
+			],
+			fit: "page",
+			direction: "rtl",
+			containerW: 800,
+			containerH: 500,
+		})
+		const [a, b] = layout.boxes
+		expect(a!.x).toBeGreaterThan(b!.x)
+	})
+
+	it("reports empty content before layout or without pages", () => {
+		expect(
+			layoutScreen({
+				pages: [],
+				fit: "page",
+				containerW: 400,
+				containerH: 600,
+			}),
+		).toEqual({ contentW: 0, contentH: 0, boxes: [] })
 	})
 })
 

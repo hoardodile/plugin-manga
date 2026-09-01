@@ -1,10 +1,13 @@
 # @hoardodile/plugin-manga
 
 Manga reader content plugin: chapter directory, scroll and paged modes,
-per-page comments and reading-position restore. Supports page-folder
-resources (subdirectories become chapters) and single-file comic
-archives — CBZ/zip, CBR/rar, CB7/7z, CBT/tar, EPUB — whose pages are
-materialized on first preview via the host's `extractArchive`.
+two-page spreads, fit and zoom, per-page comments and reading-position
+restore. Chrome follows the host theme (light/dark, palette, fonts, icon
+style) via the design system; the reading canvas is a media surface
+(black by default, theme canvas optional). Supports page-folder resources
+(subdirectories become chapters) and single-file comic archives —
+CBZ/zip, CBR/rar, CB7/7z, CBT/tar, EPUB — whose pages are materialized on
+first preview via the host's `extractArchive`.
 
 ## Importing a chapter book
 

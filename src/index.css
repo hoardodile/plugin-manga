@@ -9,13 +9,12 @@
 	overflow: hidden;
 }
 
-/* Reader scrollbar: always-present, thin, low-contrast.
-   The track is transparent so the bar reads as a subtle hint over
-   the black page background; pair with `scrollbar-gutter: stable`
-   on the container so the gutter never collapses while pages stream
-   in, which would otherwise reflow the layout. The same visual
-   weight (1.5 = 6px, white/20) is reused for the paged-mode
-   decorative indicator so switching modes feels seamless. */
+/* Reader scrollbar: always-present, thin, low-contrast, theme-aware.
+   The thumb is derived from the host's muted-foreground so it follows
+   light/dark and palette; the track stays transparent so the bar reads
+   as a subtle hint over the reading canvas. Pair with
+   `scrollbar-gutter: stable` on the container so the gutter never
+   collapses while pages stream in, which would otherwise reflow. */
 .manga-scrollbar::-webkit-scrollbar {
 	width: 6px;
 	height: 6px;
@@ -26,25 +25,61 @@
 }
 
 .manga-scrollbar::-webkit-scrollbar-thumb {
-	background: rgba(255, 255, 255, 0.2);
+	background: color-mix(in oklab, var(--muted-foreground) 28%, transparent);
 	border-radius: 3px;
 }
 
 .manga-scrollbar::-webkit-scrollbar-thumb:hover {
-	background: rgba(255, 255, 255, 0.4);
+	background: color-mix(in oklab, var(--muted-foreground) 45%, transparent);
 }
 
-/* Firefox-only: since Chrome 121 the standard props disable all
-   ::-webkit-scrollbar styling on the element (see theme.css). */
 @supports not selector(::-webkit-scrollbar) {
 	.manga-scrollbar {
 		scrollbar-width: thin;
-		scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+		scrollbar-color: color-mix(
+				in oklab,
+				var(--muted-foreground) 28%,
+				transparent
+			)
+			transparent;
 	}
 }
 
-/* Bullet-screen comment sweep on a manga page. Defined once here
-   instead of injected per overlay instance. */
+/* The reading canvas. The media surface is an opaque dark fill by
+   default (black) so white page edges blend; `.manga-canvas-theme`
+   opts into the host's background token instead. */
+.manga-canvas {
+	background: #000;
+}
+
+.manga-canvas-theme {
+	background: var(--background);
+}
+
+/* Page-loading skeleton over the media surface. Fixed dark neutral (not a
+   theme token): the reading canvas is usually black, so a light-theme
+   `--muted` skeleton would glare against it. */
+.manga-page-skeleton {
+	background: #1a1a1a;
+}
+
+/* Floating zoom controls in the paged view. Transform + opacity only
+   (design motion), fade in on hover of the surface. */
+.manga-zoom-fab {
+	transition:
+		opacity var(--duration-2) var(--ease-out),
+		transform var(--duration-2) var(--ease-out);
+}
+
+.manga-zoom-fab[data-visible="false"] {
+	opacity: 0;
+	transform: translateY(6px);
+	pointer-events: none;
+}
+
+/* Bullet-screen comment sweep on a manga page. Content motion, not
+   feedback — under reduced motion the comment text stays put instead
+   of animating. */
 @keyframes manga-comment-scroll {
 	0% {
 		transform: translateX(100vw);
@@ -54,10 +89,12 @@
 	}
 }
 
-/* The sweep is content motion, not feedback — under reduced motion the
-   comment text stays put (and unreachable) instead of animating. */
 @media (prefers-reduced-motion: reduce) {
 	.manga-comment-scroll {
 		animation: none !important;
+	}
+
+	.manga-zoom-fab {
+		transition: none !important;
 	}
 }

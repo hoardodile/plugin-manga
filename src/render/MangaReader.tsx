@@ -1,10 +1,16 @@
 import { useExtractProgress } from "@hoardodile/sdk-react"
 import { booleanCodec } from "@hoardodile/sdk-web"
+import {
+	Empty,
+	EmptyDescription,
+	EmptyTitle,
+} from "@hoardodile/ui/components/empty"
 import { useCallback, useMemo, useState } from "react"
 import { chapterOf, chapterStart, linearIndexOf } from "../core/book.ts"
 import { useTranslation } from "../i18n"
 import { MangaChapterList } from "./ChapterList"
 import { MangaCommentSendBar } from "./CommentSendBar"
+import { MangaExtractPanel } from "./ExtractPanel"
 import { buildPerPageComments, pageSrcOf } from "./helpers"
 import { useAnchorJump, usePluginAPI } from "./hooks"
 import { MangaPagedView } from "./PagedView"
@@ -16,8 +22,10 @@ import { useMangaPosition, useMangaSettings } from "./useMangaReaderState"
 /**
  * Manga reader. Routes between scroll and paged view, and wires the
  * persisted reader state (settings pref, per-resource chapter+page
- * position, per-chapter progress) to page-anchored comments rendered as
- * a bullet-screen marquee and a chapter directory drawer.
+ * position, per-chapter progress) to page-anchored comments rendered as a
+ * bullet-screen marquee and a chapter directory drawer. Chrome surfaces
+ * follow the host theme; the reading canvas is a media surface (black by
+ * default, theme canvas optional).
  */
 export function MangaReader() {
 	const api = usePluginAPI()
@@ -31,7 +39,7 @@ export function MangaReader() {
 		setUseOriginal(!useOriginal)
 	}, [setUseOriginal, useOriginal])
 
-	const { book, pages, expectedCount } = useMangaBook()
+	const { book, pages, expectedCount, isLoading } = useMangaBook()
 	const { settings, updateSettings } = useMangaSettings()
 	const position = useMangaPosition(book)
 	const {
@@ -46,8 +54,6 @@ export function MangaReader() {
 
 	// First materialization of an archive resource happens inside the
 	// `listFiles` hook — surface it while the query is still loading.
-	// (The SDK hook reports `idle`/`done` when nothing is being
-	// materialized; both map to "no progress panel".)
 	const extractState = useExtractProgress()
 	const extractProgress =
 		extractState.state === "extracting" ? extractState : undefined
@@ -68,8 +74,7 @@ export function MangaReader() {
 	}, [settings.showComments, updateSettings])
 
 	// Page → URL resolution: every page resolves through the single
-	// `resolveFileUrl` (originals vs. the preview variant), whether it is a
-	// bare file, a zip virtual entry or a materialized non-zip entry.
+	// `resolveFileUrl` (originals vs. the preview variant).
 	const pageSrc = useCallback(
 		(page: (typeof pages)[number]) =>
 			pageSrcOf(api.resolveFileUrl, page, useOriginal),
@@ -115,8 +120,10 @@ export function MangaReader() {
 	const currentChapter = book?.chapters[currentLocation.chapterIndex]
 	const showOriginalToggle = currentFile?.preview === true
 
+	const canvasBackground = settings.background === "theme" ? undefined : "#000"
+
 	return (
-		<div className="relative flex h-full w-full flex-col bg-black text-white">
+		<div className="relative flex h-full w-full flex-col bg-background text-foreground">
 			<MangaTopBar
 				pageIndex={currentPageIndex}
 				pageCount={expectedCount}
@@ -126,27 +133,33 @@ export function MangaReader() {
 				mode={mode}
 				showComments={settings.showComments}
 				useOriginal={useOriginal}
-				// The toggle is a no-op for pages without a preview variant
-				// (small or already-efficient files always serve the original)
-				// — hide it there instead of offering a dead button.
 				showOriginalToggle={showOriginalToggle}
+				settings={settings}
 				onOpenChapters={() => setChaptersOpen(true)}
 				onToggleMode={toggleMode}
 				onToggleComments={toggleComments}
 				onToggleOriginal={toggleUseOriginal}
+				onUpdateSettings={updateSettings}
 				onJump={jumpToPage}
 			/>
-			<div className="relative flex-1 overflow-hidden">
+			<div
+				className="relative flex-1 overflow-hidden"
+				style={{ background: canvasBackground }}
+			>
 				{extractProgress !== undefined ? (
-					<div
-						className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-sm text-white/70"
-						data-testid="manga-extract-progress"
+					<MangaExtractPanel
+						done={extractProgress.done}
+						total={extractProgress.total}
+					/>
+				) : pages.length === 0 && !isLoading ? (
+					<Empty
+						className="h-full"
+						data-testid="manga-empty"
+						style={{ background: canvasBackground }}
 					>
-						<span>{t("extracting")}</span>
-						<span className="tabular-nums text-white/50">
-							{extractProgress.done} / {extractProgress.total}
-						</span>
-					</div>
+						<EmptyTitle>{t("emptyTitle")}</EmptyTitle>
+						<EmptyDescription>{t("emptyDescription")}</EmptyDescription>
+					</Empty>
 				) : mode === "scroll" ? (
 					<MangaScrollView
 						pages={pages}
@@ -168,12 +181,14 @@ export function MangaReader() {
 						perPageComments={perPageComments}
 						showComments={settings.showComments}
 						direction={settings.pageDirection}
+						spread={settings.spread}
+						fitMode={settings.fitMode}
 						pageSrc={pageSrc}
 					/>
 				)}
 			</div>
 			{currentFile !== undefined ? (
-				<div className="border-t border-white/10 bg-black/60 p-2">
+				<div className="border-t border-border bg-background p-2">
 					<MangaCommentSendBar
 						filename={currentFile.filename}
 						chapter={currentLocation.chapterIndex}

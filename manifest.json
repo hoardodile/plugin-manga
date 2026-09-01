@@ -1,8 +1,8 @@
 {
 	"id": "c9cf1c0a-2a99-44fe-ac71-4068bea2fabf",
 	"name": "Manga",
-	"description": "Manga reader with chapters, scroll / paged modes, per-page messages and position restore.",
-	"version": "0.1.8",
+	"description": "Manga reader with chapters, scroll / paged modes, two-page spreads, fit and zoom, per-page messages and position restore.",
+	"version": "0.2.0",
 	"minAppVersion": "0.1.9",
 	"icon": "book-2",
 	"permissions": {
@@ -21,11 +21,11 @@
 			"es": "Manga"
 		},
 		"description": {
-			"en": "Manga reader with chapters, scroll / paged modes, per-page messages and position restore.",
-			"zh": "漫画阅读器，支持章节、滚动/翻页模式、页内留言与阅读进度恢复。",
-			"ja": "章ごとに読む漫画リーダー。スクロール/ページ送りモード、ページごとのメッセージ、読書位置の復元に対応。",
-			"de": "Manga-Reader mit Kapiteln, Scroll- und Seitenmodus, Nachrichten pro Seite und Wiederherstellung der Leseposition.",
-			"es": "Lector de manga con capítulos, modos de desplazamiento y paginado, mensajes por página y restauración de la posición."
+			"en": "Manga reader with chapters, scroll / paged modes, two-page spreads, fit and zoom, per-page messages and position restore.",
+			"zh": "漫画阅读器，支持章节、滚动/翻页模式、双页跨页、适应与缩放、页内留言与阅读进度恢复。",
+			"ja": "章ごとに読む漫画リーダー。スクロール/ページ送りモード、見開き表示、フィットとズーム、ページごとのメッセージ、読書位置の復元に対応。",
+			"de": "Manga-Reader mit Kapiteln, Scroll- und Seitenmodus, Doppelseiten, Anpassen und Zoomen, Nachrichten pro Seite und Wiederherstellung der Leseposition.",
+			"es": "Lector de manga con capítulos, modos de desplazamiento y paginado, doble página, ajuste y zoom, mensajes por página y restauración de la posición."
 		},
 		"imageKindLabel": {
 			"en": "Image",

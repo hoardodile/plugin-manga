@@ -1,4 +1,5 @@
 import type { Message } from "@hoardodile/sdk-web"
+import type { MangaFitMode } from "../prefs"
 import type { MangaPage, MangaSourceMeta } from "../shared"
 import { decodeMangaPageAnchor } from "../shared"
 
@@ -49,6 +50,110 @@ export function readMangaPreviews(
  * supersedes this.
  */
 export const FALLBACK_PAGE_ASPECT = 1.4
+
+/** Horizontal gap inside a two-page spread, in CSS pixels. */
+export const SPREAD_GAP = 2
+
+/**
+ * Aspect ratio used for layout, falling back to the generic portrait when
+ * a page has no dimensions yet (archive listing) or the dimensions are
+ * unusable.
+ */
+export function pageAspectOf(
+	page: { readonly width?: number; readonly height?: number } | undefined,
+): number {
+	const w = page?.width
+	const h = page?.height
+	if (w !== undefined && h !== undefined && w > 0 && h > 0) return w / h
+	return FALLBACK_PAGE_ASPECT
+}
+
+/** One page's computed render box, relative to the screen content origin. */
+export type LayoutPageBox = {
+	readonly x: number
+	readonly y: number
+	readonly width: number
+	readonly height: number
+}
+
+export type ScreenLayout = {
+	readonly contentW: number
+	readonly contentH: number
+	readonly boxes: readonly LayoutPageBox[]
+}
+
+/**
+ * Lay a screen's content out inside a container of `containerW x
+ * containerH`.
+ *
+ * - Single page, `fit === "page"`: contain — the page scales to fit both
+ *   dimensions.
+ * - Single page, `fit === "width"`: fill width — the page is `containerW`
+ *   wide and may overflow vertically (pannable), so wide/tall pages are
+ *   read as a scroll.
+ * - Two-page spread: contain the pair — both pages share the same height
+ *   and scale so the whole spread is visible, with a hairline gap between
+ *   them.
+ *
+ * Pure on purpose; the view feeds the result to the transform content so
+ * `@hoardodile/ui` geometry stays testable without a DOM.
+ */
+export function layoutScreen(opts: {
+	readonly pages: readonly {
+		readonly width?: number
+		readonly height?: number
+	}[]
+	readonly fit: MangaFitMode
+	readonly direction?: "ltr" | "rtl"
+	readonly containerW: number
+	readonly containerH: number
+}): ScreenLayout {
+	const { pages, fit, direction, containerW, containerH } = opts
+	if (containerW <= 0 || containerH <= 0 || pages.length === 0) {
+		return { contentW: 0, contentH: 0, boxes: [] }
+	}
+	if (pages.length >= 2) {
+		// Spread: contain the pair. The reading-order first page sits on
+		// the right in RTL (Japanese manga) and on the left in LTR.
+		const [a, b] = pages
+		const a1 = pageAspectOf(a)
+		const a2 = pageAspectOf(b)
+		const pairAspect = a1 + a2
+		const h = Math.min(containerH, containerW / pairAspect)
+		const w1 = a1 * h
+		const w2 = a2 * h
+		const rtl = direction === "rtl"
+		const first = rtl
+			? { x: w2 + SPREAD_GAP, y: 0, width: w1, height: h }
+			: { x: 0, y: 0, width: w1, height: h }
+		const second = rtl
+			? { x: 0, y: 0, width: w2, height: h }
+			: { x: w1 + SPREAD_GAP, y: 0, width: w2, height: h }
+		return {
+			contentW: w1 + SPREAD_GAP + w2,
+			contentH: h,
+			boxes: [first, second],
+		}
+	}
+	const page = pages[0]
+	const aspect = pageAspectOf(page)
+	if (fit === "width") {
+		const w = containerW
+		const h = w / aspect
+		return {
+			contentW: w,
+			contentH: h,
+			boxes: [{ x: 0, y: 0, width: w, height: h }],
+		}
+	}
+	const h = Math.min(containerH, containerW / aspect)
+	const w = aspect * h
+	return {
+		contentW: w,
+		contentH: h,
+		boxes: [{ x: 0, y: 0, width: w, height: h }],
+	}
+}
 
 /**
  * Predict the rendered height of a manga page before any image has
