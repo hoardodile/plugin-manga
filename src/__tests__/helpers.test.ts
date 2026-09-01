@@ -295,6 +295,64 @@ describe("layoutScreen", () => {
 			}),
 		).toEqual({ contentW: 0, contentH: 0, boxes: [] })
 	})
+
+	it("lays a mixed-aspect spread with different page widths", () => {
+		const layout = layoutScreen({
+			pages: [
+				{ width: 800, height: 400 },
+				{ width: 240, height: 340 },
+			],
+			fit: "page",
+			containerW: 1000,
+			containerH: 600,
+		})
+		const [a, b] = layout.boxes
+		expect(layout.boxes).toHaveLength(2)
+		expect(a!.height).toBeCloseTo(b!.height)
+		expect(a!.width).toBeGreaterThan(b!.width)
+		// A native-wide first page + portrait second page: both contain.
+		expect(layout.contentW).toBeLessThanOrEqual(1000)
+		expect(layout.contentH).toBeLessThanOrEqual(600)
+		expect(layout.contentW).toBeCloseTo(a!.width + 2 + b!.width)
+	})
+
+	it("height-limits a spread in a tall, narrow container", () => {
+		const layout = layoutScreen({
+			pages: [
+				{ width: 240, height: 340 },
+				{ width: 240, height: 340 },
+			],
+			fit: "page",
+			containerW: 300,
+			containerH: 700,
+		})
+		expect(layout.contentW).toBeLessThanOrEqual(300)
+		expect(layout.contentH).toBeGreaterThan(0)
+		expect(layout.contentH).toBeLessThanOrEqual(700)
+	})
+
+	it("width-limits a single page in a wide, short container", () => {
+		const layout = layoutScreen({
+			pages: [{ width: 600, height: 900 }],
+			fit: "page",
+			containerW: 800,
+			containerH: 400,
+		})
+		expect(layout.contentW).toBeLessThanOrEqual(800)
+		expect(layout.contentH).toBeCloseTo(400)
+	})
+
+	it("does not overflow with fit=width on a short page", () => {
+		const layout = layoutScreen({
+			pages: [{ width: 600, height: 400 }],
+			fit: "width",
+			containerW: 800,
+			containerH: 600,
+		})
+		expect(layout.contentW).toBe(800)
+		expect(layout.contentH).toBeLessThanOrEqual(600)
+		expect(layout.boxes).toHaveLength(1)
+	})
 })
 
 describe("resolveActiveIndex", () => {

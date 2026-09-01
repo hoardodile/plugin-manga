@@ -18,7 +18,12 @@ import type { MangaPage } from "../shared"
 import { layoutScreen } from "./helpers"
 import { MangaPageCommentOverlay } from "./PageCommentOverlay"
 import { tapZoneFor, turnForZone } from "./paged-geometry"
-import { buildScreens, screenOf } from "./spread-geometry"
+import {
+	buildScreens,
+	nextScreenIndex,
+	prevScreenIndex,
+	screenOf,
+} from "./spread-geometry"
 import { useMangaKeyboard } from "./useMangaKeyboard"
 import { useTapTracker } from "./useTapTracker"
 
@@ -61,7 +66,6 @@ export function MangaPagedView(props: {
 	const transformRef = useRef<ReactZoomPanPinchRef | null>(null)
 	const containerRef = useRef<HTMLDivElement | null>(null)
 	const [size, setSize] = useState({ width: 0, height: 0 })
-	const [showFabs, setShowFabs] = useState(true)
 	const { t } = useTranslation()
 
 	// The current screen: the active page's (or, with spread, the pair
@@ -156,8 +160,8 @@ export function MangaPagedView(props: {
 
 	const goPrev = useCallback(() => {
 		if (screens !== undefined) {
-			const prev = screens[screenIndex - 1]
-			if (prev !== undefined) onChangePage(prev.first)
+			const prevIndex = prevScreenIndex(screens, screenIndex)
+			if (prevIndex !== undefined) onChangePage(screens[prevIndex]!.first)
 			return
 		}
 		if (currentPageIndex > 0) onChangePage(currentPageIndex - 1)
@@ -165,8 +169,8 @@ export function MangaPagedView(props: {
 
 	const goNext = useCallback(() => {
 		if (screens !== undefined) {
-			const next = screens[screenIndex + 1]
-			if (next !== undefined) onChangePage(next.first)
+			const nextIndex = nextScreenIndex(screens, screenIndex)
+			if (nextIndex !== undefined) onChangePage(screens[nextIndex]!.first)
 			return
 		}
 		if (currentPageIndex < pages.length - 1) onChangePage(currentPageIndex + 1)
@@ -238,12 +242,8 @@ export function MangaPagedView(props: {
 			onPointerDown={tapHandlers.onPointerDown}
 			onPointerMove={tapHandlers.onPointerMove}
 			onPointerUp={tapHandlers.onPointerUp}
-			onPointerLeave={() => {
-				tapHandlers.onPointerLeave()
-				setShowFabs(false)
-			}}
+			onPointerLeave={tapHandlers.onPointerLeave}
 			onDoubleClick={handleDoubleClick}
-			onPointerEnter={() => setShowFabs(true)}
 		>
 			{layout.contentW > 0 && layout.contentH > 0 ? (
 				<TransformWrapper
@@ -299,7 +299,7 @@ export function MangaPagedView(props: {
 
 			<div
 				className="manga-zoom-fab absolute bottom-4 right-4 z-10 flex items-center gap-1"
-				data-visible={showFabs}
+				data-visible="true"
 			>
 				<Button
 					type="button"

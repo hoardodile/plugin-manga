@@ -5,6 +5,8 @@ import {
 	buildScreens,
 	isNativeSpread,
 	NATIVE_SPREAD_RATIO,
+	nextScreenIndex,
+	prevScreenIndex,
 	type SpreadScreen,
 	screenOf,
 	screenPageCount,
@@ -109,5 +111,63 @@ describe("screenPageCount", () => {
 	it("counts the pages a screen holds", () => {
 		expect(screenPageCount({ first: 1, last: 2 })).toBe(2)
 		expect(screenPageCount({ first: 4, last: 4 })).toBe(1)
+	})
+})
+
+describe("prevScreenIndex / nextScreenIndex", () => {
+	const screens: readonly SpreadScreen[] = [
+		{ first: 0, last: 1 },
+		{ first: 2, last: 2 },
+		{ first: 3, last: 4 },
+	]
+
+	it("returns undefined at the first / last screen", () => {
+		expect(prevScreenIndex(screens, 0)).toBeUndefined()
+		expect(nextScreenIndex(screens, screens.length - 1)).toBeUndefined()
+	})
+
+	it("returns the neighbour screen index in the middle", () => {
+		expect(prevScreenIndex(screens, 1)).toBe(0)
+		expect(nextScreenIndex(screens, 1)).toBe(2)
+		expect(nextScreenIndex(screens, 0)).toBe(1)
+		expect(prevScreenIndex(screens, 2)).toBe(1)
+	})
+
+	it("handles empty screens safely", () => {
+		expect(prevScreenIndex([], 0)).toBeUndefined()
+		expect(nextScreenIndex([], 0)).toBeUndefined()
+	})
+})
+
+describe("buildScreens edge cases", () => {
+	it("splits a mid-page wide page so it owns its screen", () => {
+		const { screens } = buildScreens([portrait(), wide(), portrait()])
+		expect(screens).toEqual([
+			{ first: 0, last: 0 },
+			{ first: 1, last: 1 },
+			{ first: 2, last: 2 },
+		])
+	})
+
+	it("pairs an even run into two-page screens", () => {
+		const { screens, screenCount } = buildScreens([
+			portrait(),
+			portrait(),
+			portrait(),
+			portrait(),
+		])
+		expect(screenCount).toBe(2)
+		expect(screens).toEqual([
+			{ first: 0, last: 1 },
+			{ first: 2, last: 3 },
+		])
+	})
+
+	it("does not pair a wide page with its portrait neighbour", () => {
+		const { screens } = buildScreens([wide(), portrait()])
+		expect(screens).toEqual([
+			{ first: 0, last: 0 },
+			{ first: 1, last: 1 },
+		])
 	})
 })

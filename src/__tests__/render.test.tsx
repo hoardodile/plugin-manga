@@ -174,4 +174,30 @@ describe("manga render", () => {
 		const panel = await findByTestId("manga-settings-panel")
 		expect(panel).not.toBeNull()
 	})
+
+	it("shows the empty state when the resource has no pages", async () => {
+		const api = createWebPluginAPI({
+			resource: {
+				id: "r-test",
+				name: "test",
+				sourceMeta: undefined,
+				searchMeta: undefined,
+				fileStats: { count: 0 },
+				contentPluginId: "p-test",
+			},
+			useFileList: () => ({
+				data: [],
+				isLoading: false,
+				isError: false,
+				error: null,
+			}),
+		})
+		const { findByTestId, queryByTestId } = render(
+			wrapWithAPI(api, <MangaReader />),
+		)
+		const empty = await findByTestId("manga-empty")
+		expect(empty).not.toBeNull()
+		// Never a stuck "loading" state.
+		expect(queryByTestId("manga-page-skeleton")).toBeNull()
+	})
 })

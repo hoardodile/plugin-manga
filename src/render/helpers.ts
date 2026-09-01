@@ -114,12 +114,15 @@ export function layoutScreen(opts: {
 	}
 	if (pages.length >= 2) {
 		// Spread: contain the pair. The reading-order first page sits on
-		// the right in RTL (Japanese manga) and on the left in LTR.
+		// the right in RTL (Japanese manga) and on the left in LTR. The
+		// width budget reserves the seam so the pair never exceeds the
+		// container by the gutter.
 		const [a, b] = pages
 		const a1 = pageAspectOf(a)
 		const a2 = pageAspectOf(b)
 		const pairAspect = a1 + a2
-		const h = Math.min(containerH, containerW / pairAspect)
+		const usableW = Math.max(1, containerW - SPREAD_GAP)
+		const h = Math.min(containerH, usableW / pairAspect)
 		const w1 = a1 * h
 		const w2 = a2 * h
 		const rtl = direction === "rtl"

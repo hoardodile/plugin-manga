@@ -88,3 +88,21 @@ export function screenOf(
 export function screenPageCount(screen: SpreadScreen): number {
 	return screen.last - screen.first + 1
 }
+
+/** Index of the screen immediately before `screenIndex`, or `undefined` at the first screen. */
+export function prevScreenIndex(
+	_screens: readonly SpreadScreen[],
+	screenIndex: number,
+): number | undefined {
+	return screenIndex > 0 ? screenIndex - 1 : undefined
+}
+
+/** Index of the screen immediately after `screenIndex`, or `undefined` at the last screen. */
+export function nextScreenIndex(
+	screens: readonly SpreadScreen[],
+	screenIndex: number,
+): number | undefined {
+	return screenIndex >= 0 && screenIndex < screens.length - 1
+		? screenIndex + 1
+		: undefined
+}
