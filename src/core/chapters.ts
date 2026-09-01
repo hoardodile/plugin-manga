@@ -37,6 +37,19 @@ export function compareNatural(a: string, b: string): number {
 	return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
 }
 
+/**
+ * The path used for chapter grouping. Archive pages carry a
+ * container-qualified `outer!inner` filename (e.g. `book.cbz!Ch1/001.jpg`);
+ * the container qualifier (everything up to the first `!`) is not part of
+ * the archive's inner directory structure, so it is stripped before the
+ * parent directory (and therefore the chapter title) is derived. File
+ * paths with no `!` (page-folder resources) pass through unchanged.
+ */
+function chapterPathOf(path: string): string {
+	const bang = path.indexOf("!")
+	return bang === -1 ? path : path.slice(bang + 1)
+}
+
 /** The display title of a chapter directory (its basename). */
 export function chapterTitleOf(dir: string | undefined): string | undefined {
 	if (dir === undefined) return undefined
@@ -53,7 +66,7 @@ export function buildChapterIndex(pagePaths: readonly string[]): ChapterIndex {
 	const dirs: string[] = []
 	const dirSet = new Set<string | undefined>()
 	for (const path of pagePaths) {
-		const dir = parentDir(path)
+		const dir = parentDir(chapterPathOf(path))
 		if (dirSet.has(dir)) continue
 		dirSet.add(dir)
 		if (dir !== undefined) dirs.push(dir)
@@ -72,7 +85,7 @@ export function buildChapterIndex(pagePaths: readonly string[]): ChapterIndex {
 		const firstPage = pageToChapter.length
 		let count = 0
 		for (const path of pagePaths) {
-			if (parentDir(path) !== dir) continue
+			if (parentDir(chapterPathOf(path)) !== dir) continue
 			pageToChapter.push(chapterIndex)
 			count += 1
 		}

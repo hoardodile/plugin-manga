@@ -3,10 +3,18 @@ import { isRecord } from "@hoardodile/sdk-web"
 import type { MangaSourceShape } from "./core/format"
 
 /**
- * One readable page. `source` says where the bytes live: `"file"` is a
- * real container entry (served via `resolveFileUrl`), `"cache"` is a
- * file materialized by `extractArchive` (served via
- * `resolveExtractedUrl`).
+ * One readable page. For archive resources the `filename` is the
+ * container-qualified `outer!inner` path (e.g. `book.cbz!Ch1/001.jpg`),
+ * matching the `coverLocal`/`imageHashes` scopes and what the reader
+ * needs to address the page (`resolveFileUrl`); the anchor `filename`
+ * uses the same form.
+ *
+ * `source` is a descriptive tag, not a routing decision: every page —
+ * bare file, zip virtual entry or materialized non-zip entry — resolves
+ * through the single `resolveFileUrl`. `"file"` marks rendered entries
+ * (including non-zip entries served from the host's extraction cache);
+ * `"cache"` is only used for sourceMeta count pages, which are never
+ * rendered.
  */
 export type MangaPage = {
 	readonly filename: string
@@ -52,7 +60,8 @@ export interface MangaSchema extends PluginSchema {
 
 /**
  * Comment anchor pinning a message to one page of the manga: the
- * archive-relative filename (unique per resource), the chapter index and
+ * container-qualified filename (`outer!inner` for archives, the plain
+ * path for page folders — unique per resource), the chapter index and
  * the page index *within* that chapter. Version 2 — anchors created
  * before chapters carried `{ filename, page }` with a linear page and
  * fail this decode (dropped from per-page buckets).

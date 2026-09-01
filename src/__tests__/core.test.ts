@@ -219,6 +219,22 @@ describe("buildChapterIndex", () => {
 		expect(chapters.map((c) => c.title)).toEqual(["Ch1", "Ch2"])
 	})
 
+	it("strips the container qualifier before grouping archive paths", () => {
+		const { chapters, pageToChapter } = buildChapterIndex([
+			"book.cbz!Ch1/001.jpg",
+			"book.cbz!Ch2/001.jpg",
+			"book.cbz!001.jpg",
+		])
+		// Root-level (`book.cbz!001.jpg`, no `/`) forms the leading chapter;
+		// the two subdirectory pages become "Ch1" and "Ch2".
+		expect(chapters.map((c) => [c.title, c.firstPage, c.pageCount])).toEqual([
+			[undefined, 0, 1],
+			["Ch1", 1, 1],
+			["Ch2", 2, 1],
+		])
+		expect(pageToChapter).toEqual([0, 1, 2])
+	})
+
 	it("exposes parent dirs and titles", () => {
 		expect(parentDir("a/b/c.jpg")).toBe("a/b")
 		expect(parentDir("a.jpg")).toBeUndefined()
@@ -333,6 +349,24 @@ describe("records", () => {
 		})
 	})
 
+	it("qualifies extraction pages with their container when given one", () => {
+		const pages = pagesFromExtraction(
+			{
+				entries: [
+					{ path: "Ch1/002.jpg", sizeBytes: 2, kind: "image" },
+					{ path: "Ch1/001.jpg", sizeBytes: 3, kind: "image" },
+					{ path: "notes.txt", sizeBytes: 1, kind: "other" },
+				],
+			},
+			"book.cbz",
+		)
+		expect(pages.map((p) => p.filename)).toEqual([
+			"book.cbz!Ch1/001.jpg",
+			"book.cbz!Ch1/002.jpg",
+		])
+		expect(pages[0]).toMatchObject({ source: "file" })
+	})
+
 	it("builds pages from a listing without dimensions", () => {
 		const pages = pagesFromListing({
 			entries: [
@@ -342,6 +376,24 @@ describe("records", () => {
 		})
 		expect(pages.map((p) => p.filename)).toEqual(["Ch1/001.jpg", "Ch1/002.jpg"])
 		expect(pages[0]).toMatchObject({ source: "cache" })
+		expect(pages[0]?.width).toBeUndefined()
+	})
+
+	it("qualifies listing pages as virtual file entries when given a container", () => {
+		const pages = pagesFromListing(
+			{
+				entries: [
+					{ path: "Ch1/002.jpg", sizeBytes: 2, kind: "image" },
+					{ path: "Ch1/001.jpg", sizeBytes: 3, kind: "image" },
+				],
+			},
+			"book.cbz",
+		)
+		expect(pages.map((p) => p.filename)).toEqual([
+			"book.cbz!Ch1/001.jpg",
+			"book.cbz!Ch1/002.jpg",
+		])
+		expect(pages[0]).toMatchObject({ source: "file", preview: false })
 		expect(pages[0]?.width).toBeUndefined()
 	})
 

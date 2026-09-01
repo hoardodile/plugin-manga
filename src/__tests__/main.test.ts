@@ -205,22 +205,23 @@ describe("manga archive resources", () => {
 		})
 	})
 
-	it("lists chapter-assigned pages from the extraction manifest", async () => {
+	it("lists virtual pages from a zip listing without materializing", async () => {
 		const fixture = archiveFixture()
 		const result = await plugin.listFiles?.(fixture.api)
 		expect(result?.map((f) => f.filename)).toEqual([
-			"Ch1/001.jpg",
-			"Ch2/001.jpg",
-			"Ch2/002.jpg",
+			"book.cbz!Ch1/001.jpg",
+			"book.cbz!Ch2/001.jpg",
+			"book.cbz!Ch2/002.jpg",
 		])
+		// Zip containers are addressed through the host's virtual `/files`
+		// stream, so pages carry no dimensions and serve originals.
 		expect(result?.[0]).toMatchObject({
-			source: "cache",
+			source: "file",
 			preview: false,
 			chapterIndex: 0,
 			chapterTitle: "Ch1",
-			width: 800,
-			height: 1200,
 		})
+		expect(result?.[0]?.width).toBeUndefined()
 		expect(result?.[1]).toMatchObject({
 			chapterIndex: 1,
 			chapterTitle: "Ch2",
@@ -274,9 +275,9 @@ describe("manga archive resources", () => {
 			pageCount: 3,
 		})
 		expect(result?.previews?.map((p) => p.filename)).toEqual([
-			"Ch1/001.jpg",
-			"Ch2/001.jpg",
-			"Ch2/002.jpg",
+			"book.cbz!Ch1/001.jpg",
+			"book.cbz!Ch2/001.jpg",
+			"book.cbz!Ch2/002.jpg",
 		])
 		expect(result?.previews?.[0]).toMatchObject({
 			source: "file",
@@ -340,9 +341,9 @@ describe("manga non-zip archive resources", () => {
 		const fixture = nonZipArchiveFixture()
 		const result = await plugin.listFiles?.(fixture.api)
 		expect(result?.map((f) => f.filename)).toEqual([
-			"Ch1/001.jpg",
-			"Ch2/001.jpg",
-			"Ch2/002.jpg",
+			"book.cbr!Ch1/001.jpg",
+			"book.cbr!Ch2/001.jpg",
+			"book.cbr!Ch2/002.jpg",
 		])
 	})
 
@@ -450,11 +451,11 @@ describe("manga epub resources", () => {
 		const fixture = epubFixture()
 		const result = await plugin.listFiles?.(fixture.api)
 		expect(result?.map((f) => f.filename)).toEqual([
-			"OEBPS/Images/001.jpg",
-			"OEBPS/Images/002.jpg",
+			"book.epub!OEBPS/Images/001.jpg",
+			"book.epub!OEBPS/Images/002.jpg",
 		])
 		expect(result?.[0]).toMatchObject({
-			source: "cache",
+			source: "file",
 			chapterTitle: "Images",
 		})
 	})

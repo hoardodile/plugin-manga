@@ -69,7 +69,10 @@ function singleFileContainer(
 	}
 }
 
-function makeArchive(format: "7z" | "tar", files: readonly string[]): Buffer {
+function makeArchive(
+	format: "7z" | "tar" | "zip",
+	files: readonly string[],
+): Buffer {
 	const root = mkdtempSync(join(tmpdir(), "manga-format-"))
 	try {
 		const payload = join(root, "payload")
@@ -82,7 +85,8 @@ function makeArchive(format: "7z" | "tar", files: readonly string[]): Buffer {
 			mkdirSync(dirname(target), { recursive: true })
 			writeFileSync(target, bytes)
 		}
-		const archivePath = join(root, `book.${format === "7z" ? "cb7" : "cbt"}`)
+		const ext = format === "7z" ? "cb7" : format === "tar" ? "cbt" : "cbz"
+		const archivePath = join(root, `book.${ext}`)
 		execFileSync(bin!, ["a", `-t${format}`, archivePath, "."], {
 			cwd: payload,
 			stdio: "ignore",
@@ -132,14 +136,56 @@ describe.skipIf(bin === undefined)("manga non-zip archives end-to-end", () => {
 			),
 		).toBe(true)
 		const pages = await plugin.listFiles?.(api)
-		expect(pages?.map((p) => p.filename)).toEqual(["1.png", "2.png"])
+		expect(pages?.map((p) => p.filename)).toEqual([
+			`${filename}!1.png`,
+			`${filename}!2.png`,
+		])
 		expect(pages?.[0]).toMatchObject({
 			width: 320,
 			height: 480,
-			source: "cache",
+			source: "file",
 		})
 		return api
 	}
+
+	/**
+	 * Zip containers are virtually addressable: the bare cover/`listFiles`
+	 * reads never materialize, pages carry no dimensions and are served
+	 * through the host's `/files` stream (source "file").
+	 */
+	async function runZipChain(filename: string, archiveBytes: Buffer) {
+		const api = apiFor(archiveBytes, filename)
+		expect(await plugin.detect?.(api)).toMatchObject({ ok: true })
+		const meta = await plugin.sourceMeta?.(api)
+		expect(meta).toMatchObject({ pageCount: 2, chapterCount: 1 })
+		const cover = await plugin.coverLocal?.(api)
+		expect(cover).toBe(`${filename}!1.png`)
+		// Zip entries read from the central directory — no extraction.
+		const pageBytes = Buffer.from(await api.readFile(cover!))
+		expect(
+			pageBytes.equals(
+				readFileSync(
+					join(import.meta.dirname, "..", "..", "testdata", "pages", "1.png"),
+				),
+			),
+		).toBe(true)
+		const pages = await plugin.listFiles?.(api)
+		expect(pages?.map((p) => p.filename)).toEqual([
+			`${filename}!1.png`,
+			`${filename}!2.png`,
+		])
+		expect(pages?.[0]).toMatchObject({
+			source: "file",
+			preview: false,
+		})
+		expect(pages?.[0]?.width).toBeUndefined()
+		return api
+	}
+
+	it("streams a cbz (zip) container through the virtual file path", async () => {
+		const archive = makeArchive("zip", ["1.png", "2.png"])
+		await runZipChain("book.cbz", archive)
+	})
 
 	it("runs the hook chain for a cb7 (7z) container", async () => {
 		const archive = makeArchive("7z", ["1.png", "2.png"])

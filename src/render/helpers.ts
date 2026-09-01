@@ -132,18 +132,18 @@ export function pageImageUrl(
 }
 
 /**
- * The renderable URL of a page, container or extracted: real entries go
- * through `pageImageUrl` (preview/original decision), extracted archive
- * pages through the extraction URL. The container-vs-cache split lives
- * in one place so the views never branch on it.
+ * The renderable URL of a page. Every page — a bare file, a
+ * virtually-addressed zip container entry, or a non-zip archive entry
+ * served from the host's extraction cache — resolves through the single
+ * `resolveFileUrl(filename, variant)`, where `filename` carries the
+ * container-qualified `outer!inner` form (e.g. `book.cbz!Ch1/001.jpg`).
+ * The preview/original decision (`pageImageUrl`) is the only branch.
  */
 export function pageSrcOf(
 	resolveFile: (filename: string, size?: "preview" | "original") => string,
-	resolveExtracted: (path: string) => string,
 	page: MangaPage,
 	useOriginal: boolean,
 ): string {
-	if (page.source === "cache") return resolveExtracted(page.filename)
 	return pageImageUrl(resolveFile, page, useOriginal)
 }
 

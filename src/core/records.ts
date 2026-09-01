@@ -24,31 +24,51 @@ export function sortPagePaths(paths: readonly string[]): string[] {
 	return [...paths].sort(comparePagePaths)
 }
 
-/** Image pages of a container listing, in reading order (no dims yet). */
+/**
+ * Image pages of a container listing, in reading order (no dims — the
+ * entries are enumerated from the container's directory, not materialized).
+ *
+ * With `container` the page `filename` is the container-qualified
+ * `outer!inner` path and the source is `"file"`: these pages are served
+ * by the reader through the host's virtual `/files` addressing (the
+ * stream-on-demand path used for zip containers, no extraction). Without
+ * it the pages keep the bare inner path and the `"cache"` source — used
+ * only for sourceMeta counts/dims, never rendered.
+ */
 export function pagesFromListing(
 	listing: ContainerListing,
+	container?: string,
 ): readonly MangaPage[] {
 	const images = listing.entries.filter((e) => e.kind === "image")
 	return sortPagePaths(images.map((e) => e.path)).map((path) => ({
-		filename: path,
+		filename: container === undefined ? path : `${container}!${path}`,
 		type: "image" as const,
 		preview: false,
 		chapterIndex: 0,
 		chapterTitle: undefined,
-		source: "cache" as const,
+		source: container === undefined ? ("cache" as const) : ("file" as const),
 	}))
 }
 
-/** Image pages of an extraction manifest, in reading order. */
+/**
+ * Image pages of an extraction manifest, in reading order. With
+ * `container` the page `filename` is the container-qualified path
+ * (`outer!inner`); the source is `"file"` because the reader addresses
+ * non-zip entries through `resolveFileUrl` once the host has served them
+ * from the extraction cache after `extractArchive` — the same addressing
+ * as zip. Without it the pages keep the bare inner path and the `"cache"`
+ * source — used only for sourceMeta counts/dims, never rendered.
+ */
 export function pagesFromExtraction(
 	extraction: ArchiveExtraction,
+	container?: string,
 ): readonly MangaPage[] {
 	const images = extraction.entries.filter((e) => e.kind === "image")
 	const byPath = new Map(images.map((e) => [e.path, e]))
 	return sortPagePaths(images.map((e) => e.path)).map((path) => {
 		const entry = byPath.get(path)
 		return {
-			filename: path,
+			filename: container === undefined ? path : `${container}!${path}`,
 			type: "image" as const,
 			width: entry?.width,
 			height: entry?.height,
@@ -56,7 +76,7 @@ export function pagesFromExtraction(
 			preview: false,
 			chapterIndex: 0,
 			chapterTitle: undefined,
-			source: "cache" as const,
+			source: container === undefined ? ("cache" as const) : ("file" as const),
 		}
 	})
 }

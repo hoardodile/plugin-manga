@@ -67,11 +67,12 @@ export function MangaReader() {
 		updateSettings({ showComments: !settings.showComments })
 	}, [settings.showComments, updateSettings])
 
-	// Page → URL resolution: extracted archive pages use the extraction
-	// URL, container pages the preview/original decision.
+	// Page → URL resolution: every page resolves through the single
+	// `resolveFileUrl` (originals vs. the preview variant), whether it is a
+	// bare file, a zip virtual entry or a materialized non-zip entry.
 	const pageSrc = useCallback(
 		(page: (typeof pages)[number]) =>
-			pageSrcOf(api.resolveFileUrl, api.resolveExtractedUrl, page, useOriginal),
+			pageSrcOf(api.resolveFileUrl, page, useOriginal),
 		[api, useOriginal],
 	)
 

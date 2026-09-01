@@ -71,28 +71,29 @@ describe("readMangaPreviews", () => {
 })
 
 describe("pageSrcOf", () => {
-	it("routes extracted pages through the extraction URL", () => {
+	it("resolves every page through the file URL preserving outer!inner", () => {
+		// A source "cache" page no longer routes to an extraction URL — the
+		// single `resolveFileUrl` handles materialized non-zip entries too,
+		// and the `!` separator stays intact (no `!` -> `/` conversion).
 		const src = pageSrcOf(
-			() => "file-url",
-			(path) => `extracted:${path}`,
-			page("Ch1/001.jpg", { source: "cache", preview: false }),
+			(filename) => `url:${filename}`,
+			page("book.cbz!Ch1/001.jpg", { source: "cache", preview: false }),
 			false,
 		)
-		expect(src).toBe("extracted:Ch1/001.jpg")
+		expect(src).toBe("url:book.cbz!Ch1/001.jpg")
 	})
 
-	it("routes container pages through the preview/original decision", () => {
-		const src = pageSrcOf(
-			(_filename, size) => size ?? "original",
-			() => "extracted",
-			page("a.jpg", { preview: true }),
-			false,
-		)
-		expect(src).toBe("preview")
+	it("applies the preview/original decision", () => {
 		expect(
 			pageSrcOf(
 				(_filename, size) => size ?? "original",
-				() => "extracted",
+				page("a.jpg", { preview: true }),
+				false,
+			),
+		).toBe("preview")
+		expect(
+			pageSrcOf(
+				(_filename, size) => size ?? "original",
 				page("a.jpg", { preview: true }),
 				true,
 			),

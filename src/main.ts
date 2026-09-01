@@ -163,7 +163,7 @@ async function archiveSourceMeta(
 			probed = undefined
 		}
 		previews.push({
-			filename: path,
+			filename: `${archive.filename}!${path}`,
 			type: "image",
 			width: probed?.width,
 			height: probed?.height,
@@ -298,8 +298,19 @@ async function fileList(
 ): Promise<readonly MangaPage[]> {
 	const archive = await archiveOf(api)
 	if (archive !== undefined) {
+		// Zip containers stream on demand through the host's virtual
+		// `/files` addressing (`outer!inner` from the central directory),
+		// so the reader lists them without materializing — matching
+		// `sourceMeta`/`coverLocal`/`imageHashes` and the file plugin.
+		// Non-zip containers (rar/7z/tar) are extracted first; the host
+		// then serves their entries through the same `/files` `outer!inner`
+		// addressing from the extraction cache.
+		if (isZipArchiveType(await api.sniff(archive.filename))) {
+			const listing = await api.listContainer(archive.filename)
+			return [...assignChapters(pagesFromListing(listing, archive.filename))]
+		}
 		const extraction = await api.extractArchive(archive.filename)
-		return [...assignChapters(pagesFromExtraction(extraction))]
+		return [...assignChapters(pagesFromExtraction(extraction, archive.filename))]
 	}
 	return pagePagesOf(api)
 }
