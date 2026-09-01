@@ -74,11 +74,32 @@ either a page folder or a single archive, never both:
 
 Real-world samples live in `testdata-real/` (git-ignored; not
 committed): small public-domain comics and EPUBs downloaded from the
-Internet Archive, exercised through the sandbox during development.
+Internet Archive, exercised during development.
 
 ```bash
 pnpm testdata:real   # fetch/verify samples, then run the hook suite
 ```
+
+Sizes are resolved dynamically from the archive.org metadata API, so a
+source file that changed size is re-fetched instead of failing a stale
+size check. On proxy-only networks the fetch needs Node's proxy support:
+`NODE_USE_ENV_PROXY=1 pnpm testdata:real` (or set it in the shell).
+
+The comic sample is deliberately a jp2-based archive.org scan
+(`Single Page Processed JP2 ZIP`): it reproduces the real-world case
+where the card **cover** renders but the **reader pages are blank** —
+jp2/tiff/heic are not browser-decodable, archive pages are listed as
+originals, and the host's transcode pipeline covers the first page
+(cover) but the reader serves the raw extracted bytes. Archive cards
+also show their page-count and width/height badges now that the
+archive `sourceMeta` probes the first pages through the virtual path.
+
+Verification drives the plugin hooks straight through
+`@hoardodile/host` `createPluginResourceAPI` (the same path the
+`format` integration tests use) rather than `hoardodile plugin run`:
+`plugin run`/`dev` load the plugin into the sandbox *without* its
+manifest, so the sandbox denies the `container` permission and every
+archive hook is rejected — an upstream `@hoardodile/cli` limitation.
 
 Known container limits: password-protected (encrypted) zip entries are
 rejected with a clear error, and ZIP64 archives (>4 GiB / >65535

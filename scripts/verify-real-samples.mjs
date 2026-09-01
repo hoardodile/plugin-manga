@@ -1,93 +1,92 @@
 #!/usr/bin/env node
 /**
  * Run every real-world sample in `testdata-real/` through the built
- * plugin sandbox (`hoardodile plugin run`), and print a feature report.
- * Each sample is a directory containing a single archive / page folder,
- * matching the resource shape the plugin is invoked with.
+ * plugin and print a feature report, driving the hooks directly through
+ * `@hoardodile/host` `createPluginResourceAPI` rather than
+ * `hoardodile plugin run`.
+ *
+ * Why not the CLI: `plugin run` loads the plugin into the sandbox
+ * without its manifest, so the sandbox denies the `container` permission
+ * and every archive hook is rejected ("container permission denied") —
+ * an upstream `@hoardodile/cli` limitation that would make this whole
+ * report blank for comic samples. The host API used here is the same one
+ * the plugin's own `formats.test.ts` exercises, so what runs is what the
+ * plugin's unit tests already trust.
  *
  * Requires `dist/main.js` (run `pnpm build` first). Exits non-zero when
  * any sample fails a hook.
  *
  * Usage: node scripts/verify-real-samples.mjs
  */
-import { execFileSync } from "node:child_process"
-import { existsSync, readFileSync } from "node:fs"
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+} from "node:fs"
+import { tmpdir } from "node:os"
 import { dirname, join, resolve } from "node:path"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, pathToFileURL } from "node:url"
+
+import {
+	createDirectoryContainer,
+	createPluginResourceAPI,
+} from "@hoardodile/host"
+import { mediaProbes } from "@hoardodile/host/probe"
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..")
-const DIST_DIR = join(ROOT, "dist")
+const DIST_MAIN = join(ROOT, "dist", "main.js")
 const REAL_DIR = join(ROOT, "testdata-real")
 const MANIFEST_PATH = join(REAL_DIR, "samples.json")
 
-if (!existsSync(join(DIST_DIR, "main.js"))) {
+if (!existsSync(DIST_MAIN)) {
 	console.error("[verify] dist/main.js missing — run `pnpm build` first")
 	process.exit(1)
 }
 
-/**
- * Resolve the hoardodile CLI entry by reading its package.json directly
- * (the package does not export `./package.json`). pnpm links the
- * workspace package into the plugin's node_modules, so the path exists
- * even though @hoardodile/cli is a devDependency of the plugin toolchain.
- */
-function cliEntry() {
-	const pkgPath = join(
-		ROOT,
-		"node_modules",
-		"@hoardodile",
-		"cli",
-		"package.json",
-	)
-	const pkg = JSON.parse(readFileSync(pkgPath, "utf8"))
-	const bin = typeof pkg.bin === "string" ? pkg.bin : pkg.bin?.hoardodile
-	return join(dirname(pkgPath), bin ?? "bin/hoardodile.mjs")
-}
-
-function runHook(hook, dir) {
-	const out = execFileSync(
-		process.execPath,
-		[cliEntry(), "plugin", "run", hook, dir, "--plugin-dir", DIST_DIR],
-		{ encoding: "utf8" },
-	)
-	return JSON.parse(out)
-}
+const plugin = (
+	await import(pathToFileURL(DIST_MAIN).href)
+).default
 
 const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"))
 let failed = 0
+
+function fmt(value) {
+	return value === undefined ? "-" : String(value)
+}
+
 console.log("── real sample verification ─────────────────────────")
 for (const sample of manifest.samples) {
 	const dir = join(REAL_DIR, sample.dir)
 	if (!existsSync(join(dir, sample.file))) {
-		console.log(
-			`✕ ${sample.name} — sample file missing (run fetch-real-samples.mjs)`,
-		)
+		console.log(`✕ ${sample.name} — sample file missing (run fetch-real-samples.mjs)`)
 		failed++
 		continue
 	}
+	const extractCacheDir = mkdtempSync(join(tmpdir(), "manga-real-"))
+	const api = createPluginResourceAPI({
+		view: createDirectoryContainer(dir),
+		...mediaProbes,
+		extractCacheDir,
+		cacheScope: `real:${sample.name}`,
+	})
 	const row = { name: sample.name, features: sample.features.join(",") }
 	try {
-		const detect = runHook("detect", dir)
-		row.detect =
-			detect.result?.ok === true
-				? "ok"
-				: (detect.result?.reasons?.join(",") ?? "fail")
-		const meta = runHook("sourceMeta", dir)
-		if (meta.result !== undefined && meta.result !== null) {
-			row.chapters = meta.result.chapterCount ?? "?"
-			row.pages = meta.result.pageCount ?? "?"
-		} else {
-			row.pages = "0"
-		}
-		const files = runHook("listFiles", dir)
-		row.pages = Array.isArray(files.result) ? files.result.length : "?"
-		row.first =
-			Array.isArray(files.result) && files.result.length > 0
-				? files.result[0].filename
-				: "-"
-		row.chapters = Array.isArray(files.result)
-			? Math.max(0, ...files.result.map((f) => f.chapterIndex + 1))
-			: 0
+		const detect = await plugin.detect(api)
+		row.detect = detect.ok === true ? "ok" : (detect.reasons?.join(",") ?? "fail")
+		const meta = await plugin.sourceMeta?.(api)
+		row.previews = meta?.previews?.length ?? 0
+		row.width = meta?.width
+		row.height = meta?.height
+		row.chapters = meta?.chapterCount ?? "?"
+		row.pages = meta?.pageCount ?? "?"
+		row.cover = fmt(await plugin.coverLocal?.(api))
+		const files = (await plugin.listFiles?.(api)) ?? []
+		row.first = files[0]?.filename ?? "-"
+		row.firstSource = files[0]?.source ?? "-"
+		row.firstPreview = files[0]?.preview ?? false
+		row.firstW = files[0]?.width
+		row.firstH = files[0]?.height
+		row.fileCount = files.length
 	} catch (err) {
 		row.error = err instanceof Error ? err.message : String(err)
 	}
@@ -95,7 +94,10 @@ for (const sample of manifest.samples) {
 	if (!ok) failed++
 	console.log(`${ok ? "✓" : "✕"} ${row.name}  [${row.features}]`)
 	console.log(
-		`    detect=${row.detect ?? "?"}  pages=${row.pages}  chapters=${row.chapters}  first=${row.first ?? "-"}`,
+		`    detect=${row.detect ?? "?"}  pages=${row.pages}  chapters=${row.chapters}  previews=${row.previews}  w=${fmt(row.width)} h=${fmt(row.height)}`,
+	)
+	console.log(
+		`    cover=${row.cover ?? "-"}  first=${row.first}  [${row.firstSource} preview=${row.firstPreview} w=${fmt(row.firstW)} h=${fmt(row.firstH)}]  fileCount=${row.fileCount}`,
 	)
 	if (row.error !== undefined) console.log(`    error: ${row.error}`)
 }
