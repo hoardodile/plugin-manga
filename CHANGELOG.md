@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.0](https://github.com/hoardodile/plugin-manga/compare/v0.1.8...v0.2.0) (2026-09-01)
+
+### Features
+
+* **reader:** rewrite as a theme-aware, spread-capable manga reader ([14794a8](https://github.com/hoardodile/plugin-manga/commit/14794a8f3d98978a34f695b8e1235301b57b376c))
+
+### Bug Fixes
+
+* **reader:** harden spread/fit boundaries and zoom controls ([2cea4ef](https://github.com/hoardodile/plugin-manga/commit/2cea4ef159a5043cb900359722a52166ee855ad8))
+
 ## [0.1.8](https://github.com/hoardodile/plugin-manga/compare/v0.1.7...v0.1.8) (2026-09-01)
 
 ### Features
