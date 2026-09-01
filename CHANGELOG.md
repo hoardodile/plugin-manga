@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.6](https://github.com/hoardodile/plugin-manga/compare/v0.1.5...v0.1.6) (2026-09-01)
+
+### Bug Fixes
+
+* adapt archive addressing to hoardodile SDK 0.1.8 ([e7d8d29](https://github.com/hoardodile/plugin-manga/commit/e7d8d2983ff0596fd4cf286a0a3bb2dcc3484576))
+
 ## [0.1.5](https://github.com/hoardodile/plugin-manga/compare/v0.1.4...v0.1.5) (2026-09-01)
 
 ### Bug Fixes
