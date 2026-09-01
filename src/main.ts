@@ -121,15 +121,71 @@ async function sourceMeta(
 ): Promise<MangaSchema["sourceMeta"] | undefined> {
 	const archive = await archiveOf(api)
 	if (archive !== undefined) {
-		// Listing-only: page/chapter counts for the card without
-		// materializing — full extraction stays deferred to listFiles
-		// (first preview). Dimensions appear once the manifest exists.
-		const pages = assignChapters(
-			pagesFromListing(await api.listContainer(archive.filename)),
-		)
-		return buildSourceMeta({ pages })
+		return archiveSourceMeta(api, archive)
 	}
 	return pageSourceMeta(api)
+}
+
+/**
+ * Archive source metadata. Zip containers are virtually addressable
+ * (`book.cbz!page.png`), so the first `PREVIEW_COUNT` pages can be
+ * probed through the virtual path for card previews and the first page's
+ * dimensions — no materialization. Non-zip containers (rar/7z/tar) are
+ * not virtually addressable, so they stay a listing-only count (the
+ * card keeps covers/counts; a probe would force an extraction for a
+ * cosmetic badge, and reading an unextracted virtual path is invalid).
+ */
+async function archiveSourceMeta(
+	api: ResourceAPI<MangaSchema>,
+	archive: Extract<MangaSourceShape, { readonly kind: "archive" }>,
+): Promise<MangaSchema["sourceMeta"] | undefined> {
+	const listing = await api.listContainer(archive.filename)
+	const pages = assignChapters(pagesFromListing(listing))
+	if (!isZipArchiveType(await api.sniff(archive.filename))) {
+		return buildSourceMeta({ pages })
+	}
+
+	const imagePaths = sortPagePaths(
+		listing.entries.filter((e) => e.kind === "image").map((e) => e.path),
+	)
+	if (imagePaths.length === 0) return undefined
+
+	const previews: MangaPage[] = []
+	let firstDims: { readonly width?: number; readonly height?: number } | undefined
+	for (const path of imagePaths) {
+		if (previews.length >= PREVIEW_COUNT) break
+		let probed:
+			| { readonly width?: number; readonly height?: number; readonly preview: boolean }
+			| undefined
+		try {
+			probed = await probeImageFile(api, `${archive.filename}!${path}`)
+		} catch {
+			probed = undefined
+		}
+		previews.push({
+			filename: path,
+			type: "image",
+			width: probed?.width,
+			height: probed?.height,
+			preview: probed?.preview ?? false,
+			chapterIndex: 0,
+			chapterTitle: undefined,
+			source: "file",
+		})
+		if (
+			firstDims === undefined &&
+			(probed?.width !== undefined || probed?.height !== undefined)
+		) {
+			firstDims = { width: probed.width, height: probed.height }
+		}
+	}
+
+	return {
+		...firstDims,
+		previews,
+		chapterCount: pages.reduce((acc, p) => Math.max(acc, p.chapterIndex + 1), 0),
+		pageCount: pages.length,
+	}
 }
 
 async function pageSourceMeta(

@@ -239,16 +239,50 @@ describe("manga archive resources", () => {
 				},
 			},
 			containerListings: { "book.cbz": CBZ_LISTING },
-			// No `extractions` configured: sourceMeta must only list, so
-			// an extraction would make this test fail.
+			// No `extractions` configured: zip sourceMeta only lists and
+			// probes the virtual path, never materializes.
 		})
 		const result = await plugin.sourceMeta?.(fixture.api)
 		expect(result).toMatchObject({
 			chapterCount: 2,
 			pageCount: 3,
 		})
-		// No dimensions until materialization.
+		// Dimensions come from probing the virtual path — absent here
+		// because no `probes` were configured (the fixture decodes nothing).
 		expect(result?.width).toBeUndefined()
+	})
+
+	it("probes first pages for dimensions and previews in sourceMeta", async () => {
+		const fixture = createResourceAPIFixture<MangaSchema>({
+			files: ["book.cbz"],
+			types: {
+				"book.cbz": {
+					mime: "application/vnd.comicbook+zip",
+					ext: ".cbz",
+					kind: "other",
+					source: "magic",
+				},
+			},
+			containerListings: { "book.cbz": CBZ_LISTING },
+			probes: { "": PAGE_PROBE },
+		})
+		const result = await plugin.sourceMeta?.(fixture.api)
+		expect(result).toMatchObject({
+			width: 800,
+			height: 1200,
+			chapterCount: 2,
+			pageCount: 3,
+		})
+		expect(result?.previews?.map((p) => p.filename)).toEqual([
+			"Ch1/001.jpg",
+			"Ch2/001.jpg",
+			"Ch2/002.jpg",
+		])
+		expect(result?.previews?.[0]).toMatchObject({
+			source: "file",
+			width: 800,
+			height: 1200,
+		})
 	})
 
 	it("resolves the cover as a virtual path to the first page", async () => {

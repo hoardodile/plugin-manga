@@ -68,7 +68,7 @@
 		"card": {
 			"image": {
 				"bl": [
-					"{{if(gt(file.count, 1), join(' ', searchKindIcons(), file.count))}}",
+					"{{if(gt(source.pageCount, 1), join(' ', searchKindIcons(), source.pageCount))}}",
 					"{{if(gt(source.chapterCount, 1), join(' ', source.chapterCount, t('chapterCountLabel')))}}"
 				],
 				"br": [
