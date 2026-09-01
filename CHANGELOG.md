@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.7](https://github.com/hoardodile/plugin-manga/compare/v0.1.6...v0.1.7) (2026-09-01)
+
+### Features
+
+* align to the hoardodile 0.1.8 plugin template ([6f1ba10](https://github.com/hoardodile/plugin-manga/commit/6f1ba1004ad1aba21321af3e539035809f10c2e6))
+
 ## [0.1.6](https://github.com/hoardodile/plugin-manga/compare/v0.1.5...v0.1.6) (2026-09-01)
 
 ### Bug Fixes
