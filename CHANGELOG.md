@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/hoardodile/plugin-manga/compare/v0.2.0...v0.2.1) (2026-09-02)
+
+### Features
+
+* **reader:** add transparent background and left chapter drawer ([39e0d1d](https://github.com/hoardodile/plugin-manga/commit/39e0d1d11f5b7204ad1ebdcc51d3e4fce2fdb31d)), references [html/body/#root](https://github.com/html/body/issues/root)
+* **reader:** default to the transparent background and order it first ([b5c1ee6](https://github.com/hoardodile/plugin-manga/commit/b5c1ee64307c06532076c77468402be2bc16c802))
+
 ## [0.2.0](https://github.com/hoardodile/plugin-manga/compare/v0.1.8...v0.2.0) (2026-09-01)
 
 ### Features
