@@ -30,6 +30,7 @@ export default {
 	spread: "双页跨页",
 	backgroundBlack: "黑色",
 	backgroundTheme: "主题",
+	backgroundTransparent: "透明",
 	comments: "页内弹幕",
 	zoomIn: "放大",
 	zoomOut: "缩小",

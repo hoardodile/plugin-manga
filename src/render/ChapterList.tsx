@@ -29,8 +29,12 @@ export function MangaChapterList(props: {
 	const { t } = useTranslation()
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
-			<SheetContent side="right" className="w-80 bg-card text-card-foreground">
-				<SheetHeader>
+			<SheetContent
+				side="left"
+				className="w-sidebar! bg-card text-card-foreground"
+				showCloseButton={false}
+			>
+				<SheetHeader className="pb-0">
 					<SheetTitle className="text-sm">{t("chapters")}</SheetTitle>
 					<SheetDescription className="text-xs text-muted-foreground">
 						{t("chaptersCount", { total: book.chapterCount })}
@@ -38,7 +42,7 @@ export function MangaChapterList(props: {
 				</SheetHeader>
 				<ScrollArea className="h-full">
 					<ol
-						className="flex flex-col gap-1 p-2"
+						className="flex flex-col gap-1 px-2 pb-2"
 						data-testid="manga-chapter-list"
 					>
 						{book.chapters.map((chapter) => {

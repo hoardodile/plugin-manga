@@ -30,6 +30,7 @@ export default {
 	spread: "見開き表示",
 	backgroundBlack: "黒",
 	backgroundTheme: "テーマ",
+	backgroundTransparent: "透明",
 	comments: "ページコメント",
 	zoomIn: "拡大",
 	zoomOut: "縮小",

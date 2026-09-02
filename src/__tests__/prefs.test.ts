@@ -22,6 +22,13 @@ describe("encodeMangaSettings", () => {
 	it("round-trips a full v2 settings object", () => {
 		expect(decodeMangaSettings(encodeMangaSettings(full))).toEqual(full)
 	})
+
+	it("round-trips the transparent background value", () => {
+		const transparent = { ...full, background: "transparent" as const }
+		expect(decodeMangaSettings(encodeMangaSettings(transparent))).toEqual(
+			transparent,
+		)
+	})
 })
 
 describe("decodeMangaSettings", () => {

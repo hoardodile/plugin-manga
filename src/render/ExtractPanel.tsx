@@ -13,15 +13,17 @@ import { useTranslation } from "../i18n"
 export function MangaExtractPanel(props: {
 	readonly done: number
 	readonly total: number
+	/** Transparent reader background: composite through to the host page. */
+	readonly transparent?: boolean
 }) {
-	const { done, total } = props
+	const { done, total, transparent = false } = props
 	const { t } = useTranslation()
 	const pct = total > 0 ? Math.min(100, (done / total) * 100) : 0
 	return (
 		<div
 			className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center"
 			data-testid="manga-extract-progress"
-			style={{ background: "var(--background)" }}
+			style={{ background: transparent ? "transparent" : "var(--background)" }}
 		>
 			<span className="text-sm text-secondary-foreground">
 				{t("extracting")}

@@ -25,7 +25,8 @@ import { useMangaPosition, useMangaSettings } from "./useMangaReaderState"
  * position, per-chapter progress) to page-anchored comments rendered as a
  * bullet-screen marquee and a chapter directory drawer. Chrome surfaces
  * follow the host theme; the reading canvas is a media surface (black by
- * default, theme canvas optional).
+ * default, theme canvas optional, or a see-through Transparent canvas that
+ * composites against the host page behind the iframe).
  */
 export function MangaReader() {
 	const api = usePluginAPI()
@@ -66,12 +67,6 @@ export function MangaReader() {
 	)
 
 	const mode = settings.defaultMode
-	const toggleMode = useCallback(() => {
-		updateSettings({ defaultMode: mode === "scroll" ? "paged" : "scroll" })
-	}, [mode, updateSettings])
-	const toggleComments = useCallback(() => {
-		updateSettings({ showComments: !settings.showComments })
-	}, [settings.showComments, updateSettings])
 
 	// Page → URL resolution: every page resolves through the single
 	// `resolveFileUrl` (originals vs. the preview variant).
@@ -120,24 +115,25 @@ export function MangaReader() {
 	const currentChapter = book?.chapters[currentLocation.chapterIndex]
 	const showOriginalToggle = currentFile?.preview === true
 
-	const canvasBackground = settings.background === "theme" ? undefined : "#000"
+	const transparent = settings.background === "transparent"
+	const canvasBackground = settings.background === "black" ? "#000" : undefined
 
 	return (
-		<div className="relative flex h-full w-full flex-col bg-background text-foreground">
+		<div
+			className={`relative flex h-full w-full flex-col text-foreground ${
+				transparent ? "bg-transparent" : "bg-background"
+			}`}
+		>
 			<MangaTopBar
 				pageIndex={currentPageIndex}
 				pageCount={expectedCount}
 				chapterIndex={currentLocation.chapterIndex}
 				chapterCount={book?.chapterCount ?? 0}
 				chapterTitle={currentChapter?.title}
-				mode={mode}
-				showComments={settings.showComments}
 				useOriginal={useOriginal}
 				showOriginalToggle={showOriginalToggle}
 				settings={settings}
 				onOpenChapters={() => setChaptersOpen(true)}
-				onToggleMode={toggleMode}
-				onToggleComments={toggleComments}
 				onToggleOriginal={toggleUseOriginal}
 				onUpdateSettings={updateSettings}
 				onJump={jumpToPage}
@@ -150,6 +146,7 @@ export function MangaReader() {
 					<MangaExtractPanel
 						done={extractProgress.done}
 						total={extractProgress.total}
+						transparent={transparent}
 					/>
 				) : pages.length === 0 && !isLoading ? (
 					<Empty

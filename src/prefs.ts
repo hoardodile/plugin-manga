@@ -6,7 +6,7 @@ export type MangaPageDirection = "ltr" | "rtl"
 export type MangaFitMode = "page" | "width"
 
 /** Reading-canvas background. */
-export type MangaBackground = "black" | "theme"
+export type MangaBackground = "black" | "theme" | "transparent"
 
 export type MangaSettings = {
 	readonly v: 2
@@ -55,7 +55,12 @@ export function decodeMangaSettings(raw: string): MangaSettings | undefined {
 			showComments: parsed.showComments !== false,
 			spread: parsed.spread === true,
 			fitMode: parsed.fitMode === "width" ? "width" : "page",
-			background: parsed.background === "theme" ? "theme" : "black",
+			background:
+				parsed.background === "transparent"
+					? "transparent"
+					: parsed.background === "theme"
+						? "theme"
+						: "black",
 		}
 	} catch {
 		return undefined

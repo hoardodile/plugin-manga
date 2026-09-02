@@ -51,7 +51,7 @@ describe("manga render", () => {
 		const { queryByTestId } = render(wrapWithAPI(api, <MangaReader />))
 		// Top bar is visible during skeleton; the page content area is skeleton
 		await waitFor(() => {
-			expect(queryByTestId("manga-mode-toggle")).not.toBeNull()
+			expect(queryByTestId("manga-settings-toggle")).not.toBeNull()
 			expect(queryByTestId("manga-page-indicator")).not.toBeNull()
 		})
 	})
@@ -71,7 +71,7 @@ describe("manga render", () => {
 		})
 		const { queryByTestId } = render(wrapWithAPI(api, <MangaReader />))
 		await waitFor(() =>
-			expect(queryByTestId("manga-mode-toggle")).not.toBeNull(),
+			expect(queryByTestId("manga-settings-toggle")).not.toBeNull(),
 		)
 	})
 
@@ -131,13 +131,16 @@ describe("manga render", () => {
 		button.click()
 		const list = await findByTestId("manga-chapter-list")
 		expect(list).not.toBeNull()
+		// The chapter drawer docks on the left, per the hd-plugin-design
+		// left-rail rule (SheetContent carries `data-side`).
+		expect(list.closest('[data-side="left"]')).not.toBeNull()
 		expect(list.textContent).toContain("Chapter 1")
 		expect(list.textContent).toContain("Chapter 2")
 		// Top bar still shows its chrome.
-		expect(getByTestId("manga-mode-toggle")).not.toBeNull()
+		expect(getByTestId("manga-page-indicator")).not.toBeNull()
 	})
 
-	it("exposes the reading-mode toggle", async () => {
+	it("moves mode and comments into the settings popover, off the top bar", async () => {
 		const api = createWebPluginAPI({
 			resource: {
 				...createWebPluginAPI().resource,
@@ -150,9 +153,17 @@ describe("manga render", () => {
 				error: null,
 			}),
 		})
-		const { findByTestId } = render(wrapWithAPI(api, <MangaReader />))
-		const button = await findByTestId("manga-mode-toggle")
-		expect(button).toHaveAttribute("aria-pressed", "false")
+		const { queryByTestId, findByTestId } = render(
+			wrapWithAPI(api, <MangaReader />),
+		)
+		// The quick reading-mode / danmaku toggles no longer sit on the top
+		// bar…
+		await waitFor(() => expect(queryByTestId("manga-mode-toggle")).toBeNull())
+		expect(queryByTestId("manga-comments-toggle")).toBeNull()
+		// …but both are still configurable from the settings popover.
+		const trigger = await findByTestId("manga-settings-toggle")
+		act(() => trigger.click())
+		expect(await findByTestId("manga-settings-panel")).not.toBeNull()
 	})
 
 	it("opens the settings popover", async () => {

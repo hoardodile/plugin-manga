@@ -30,6 +30,7 @@ export default {
 	spread: "Doppelseite",
 	backgroundBlack: "Schwarz",
 	backgroundTheme: "Design",
+	backgroundTransparent: "Transparent",
 	comments: "Seitenkommentare",
 	zoomIn: "Vergrößern",
 	zoomOut: "Verkleinern",
