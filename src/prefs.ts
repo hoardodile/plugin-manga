@@ -30,7 +30,7 @@ export const MANGA_SETTINGS_DEFAULT: MangaSettings = {
 	showComments: true,
 	spread: false,
 	fitMode: "page",
-	background: "black",
+	background: "transparent",
 }
 
 export function encodeMangaSettings(value: MangaSettings): string {
@@ -60,7 +60,9 @@ export function decodeMangaSettings(raw: string): MangaSettings | undefined {
 					? "transparent"
 					: parsed.background === "theme"
 						? "theme"
-						: "black",
+						: parsed.background === "black"
+							? "black"
+							: MANGA_SETTINGS_DEFAULT.background,
 		}
 	} catch {
 		return undefined

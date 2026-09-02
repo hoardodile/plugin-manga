@@ -47,7 +47,7 @@ describe("decodeMangaSettings", () => {
 			showComments: true,
 			spread: false,
 			fitMode: "page",
-			background: "black",
+			background: "transparent",
 		})
 	})
 

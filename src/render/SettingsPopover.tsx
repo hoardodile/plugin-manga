@@ -79,9 +79,9 @@ export function MangaSettingsPopover(props: {
 					value={settings.background}
 					onChange={(v) => onChange({ background: v as MangaBackground })}
 					options={[
-						{ value: "black", label: t("backgroundBlack") },
-						{ value: "theme", label: t("backgroundTheme") },
 						{ value: "transparent", label: t("backgroundTransparent") },
+						{ value: "theme", label: t("backgroundTheme") },
+						{ value: "black", label: t("backgroundBlack") },
 					]}
 					ariaLabel={t("settingBackground")}
 				/>
