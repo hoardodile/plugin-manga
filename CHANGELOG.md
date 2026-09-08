@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.2](https://github.com/hoardodile/plugin-manga/compare/v0.2.1...v0.2.2) (2026-09-08)
+
+### Bug Fixes
+
+* **manifest:** use Video icon for animation kind ([4d35f8f](https://github.com/hoardodile/plugin-manga/commit/4d35f8f5a4f118858ebeee4c41eb01a79d87bc14))
+
 ## [0.2.1](https://github.com/hoardodile/plugin-manga/compare/v0.2.0...v0.2.1) (2026-09-02)
 
 ### Features

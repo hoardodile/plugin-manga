@@ -2,7 +2,7 @@
 	"id": "c9cf1c0a-2a99-44fe-ac71-4068bea2fabf",
 	"name": "Manga",
 	"description": "Manga reader with chapters, scroll / paged modes, two-page spreads, fit and zoom, per-page messages and position restore.",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"minAppVersion": "0.1.11",
 	"icon": "book-2",
 	"permissions": {
