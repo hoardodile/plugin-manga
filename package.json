@@ -82,7 +82,7 @@
 		"@vitejs/plugin-react": "^6.0.5",
 		"jsdom": "^30.0.1",
 		"lefthook": "^2.1.10",
-		"lint-staged": "^17.3.0",
+		"lint-staged": "^17.5.0",
 		"release-it": "^21.0.2",
 		"shadcn": "^4.19.0",
 		"tailwindcss": "^4.3.3",
