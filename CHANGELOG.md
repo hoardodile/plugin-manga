@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.3](https://github.com/hoardodile/plugin-manga/compare/v0.2.2...v0.2.3) (2026-10-03)
+
+### Bug Fixes
+
+* **plugin-manga:** preserve host page order and reading position ([0cf5d38](https://github.com/hoardodile/plugin-manga/commit/0cf5d38fcc016ef81b6eeaf3eb644ef55cd67034))
+
 ## [0.2.2](https://github.com/hoardodile/plugin-manga/compare/v0.2.1...v0.2.2) (2026-09-08)
 
 ### Bug Fixes
