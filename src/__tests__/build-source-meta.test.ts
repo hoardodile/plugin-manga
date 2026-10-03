@@ -28,7 +28,7 @@ function createFixture(
 }
 
 describe("manga sourceMeta", () => {
-	it("collects the first 3 image filenames sorted naturally", async () => {
+	it("collects the first 3 image filenames in host order", async () => {
 		const fixture = createFixture(
 			["10.jpg", "2.jpg", "01.jpg", "03.png", "readme.txt", "04.webp"],
 			{ width: 800, height: 1200 },
@@ -41,9 +41,9 @@ describe("manga sourceMeta", () => {
 		expect(result.width).toBe(800)
 		expect(result.height).toBe(1200)
 		expect(result.previews.map((f) => f.filename)).toEqual([
-			"01.jpg",
+			"10.jpg",
 			"2.jpg",
-			"03.png",
+			"01.jpg",
 		])
 	})
 

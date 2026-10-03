@@ -4,33 +4,18 @@ import type { MangaPage, MangaSourceMeta } from "../shared"
 import { decodeMangaPageAnchor } from "../shared"
 
 /**
- * Natural-order comparator for filenames, so `page2.jpg` sorts before
- * `page10.jpg` (vs. lexical sort that puts `page10` first). Used by
- * the manga reader to lay pages out in a predictable order matching
- * how a human numbers files.
- */
-export function compareFilenamesNatural(a: string, b: string): number {
-	return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
-}
-
-/**
- * Filter a resource's file list down to image pages (the manga reader
- * ignores side-cars, READMEs, etc.) and sort by natural filename
- * order so `02.jpg` precedes `10.jpg`.
+ * Filter sidecars while preserving the authoritative server page order.
  */
 export function selectMangaPages(
 	files: readonly MangaPage[],
 ): readonly MangaPage[] {
-	const pages = files.filter((f) => f.type === "image")
-	return [...pages].sort((a, b) =>
-		compareFilenamesNatural(a.filename, b.filename),
-	)
+	return files.filter((f) => f.type === "image")
 }
 
 /**
  * First-paint preview hint written by `sourceMeta` into the
  * resource's `sourceMeta.previews`: up to 3 {@link MangaPage} entries
- * in natural sort order, available synchronously from `api.resource.sourceMeta`
+ * in reading order, available synchronously from `api.resource.sourceMeta`
  * before `api.useFileList()` resolves.
  */
 export function readMangaPreviews(

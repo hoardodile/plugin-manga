@@ -49,7 +49,7 @@ function createApiStub(
 }
 
 describe("manga listFiles", () => {
-	it("returns natural-sorted pages with probe data, skipping non-images", async () => {
+	it("preserves host page order with probe data, skipping non-images", async () => {
 		const fixture = createResourceAPIFixture<MangaSchema>({
 			files: ["10.jpg", "2.jpg", "01.jpg", "notes.txt"],
 			probes: { "": PAGE_PROBE },
@@ -57,9 +57,9 @@ describe("manga listFiles", () => {
 		})
 		const result = await plugin.listFiles?.(fixture.api)
 		expect(result?.map((f) => f.filename)).toEqual([
-			"01.jpg",
-			"2.jpg",
 			"10.jpg",
+			"2.jpg",
+			"01.jpg",
 		])
 		expect(result?.[0]).toMatchObject({ type: "image", width: 800 })
 	})

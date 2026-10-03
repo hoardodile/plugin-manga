@@ -13,6 +13,7 @@ import {
 	readMangaPreviews,
 	resolveActiveIndex,
 	resolveRenderWidth,
+	selectMangaPages,
 } from "../render/helpers"
 import type { MangaPage } from "../shared"
 
@@ -27,6 +28,13 @@ function page(filename: string, overrides: Partial<MangaPage> = {}): MangaPage {
 		...overrides,
 	}
 }
+
+describe("selectMangaPages", () => {
+	it("keeps the authoritative file-list order", () => {
+		const pages = [page("c.jpg"), page("b.jpg"), page("a.jpg")]
+		expect(selectMangaPages(pages)).toEqual(pages)
+	})
+})
 
 describe("readMangaPreviews", () => {
 	it("parses new-format MangaPage[] from sourceMeta", () => {

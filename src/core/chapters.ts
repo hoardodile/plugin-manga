@@ -1,12 +1,11 @@
 /**
  * Chapter grouping. A chapter is a run of consecutive pages that share a
  * parent directory (inside the resource folder or inside the archive);
- * pages at the root form the leading chapter without a title. Ordering
- * is natural sort of the directory path, matching how a human numbers
- * `Chapter 1/`, `Chapter 2/` (or `第1话/`, `第2话/`).
+ * root pages form untitled runs. The supplied reading order is preserved,
+ * including custom upload order and directories appearing more than once.
  *
  * The reader renders the whole book linearly — chapters are purely an
- * index over the sorted page list — so every chapter is a contiguous
+ * index over the page list — so every chapter is a contiguous
  * run `[firstPage, firstPage + pageCount)`.
  */
 
@@ -59,45 +58,28 @@ export function chapterTitleOf(dir: string | undefined): string | undefined {
 
 /**
  * Group a page list (already in reading order) into chapters. Consecutive
- * pages sharing a parent directory form one chapter; root-level pages
- * form an untitled leading chapter.
+ * pages sharing a parent directory form one chapter; root-level runs
+ * form untitled chapters wherever they appear.
  */
 export function buildChapterIndex(pagePaths: readonly string[]): ChapterIndex {
-	const dirs: string[] = []
-	const dirSet = new Set<string | undefined>()
-	for (const path of pagePaths) {
-		const dir = parentDir(chapterPathOf(path))
-		if (dirSet.has(dir)) continue
-		dirSet.add(dir)
-		if (dir !== undefined) dirs.push(dir)
-	}
-	// Root pages always come first (the natural sort of "" precedes any
-	// directory), then directories in natural order.
-	dirs.sort(compareNatural)
-	const ordered: readonly (string | undefined)[] = dirSet.has(undefined)
-		? [undefined, ...dirs]
-		: dirs
-
 	const chapters: MangaChapter[] = []
 	const pageToChapter: number[] = []
-	let chapterIndex = 0
-	for (const dir of ordered) {
-		const firstPage = pageToChapter.length
-		let count = 0
-		for (const path of pagePaths) {
-			if (parentDir(chapterPathOf(path)) !== dir) continue
-			pageToChapter.push(chapterIndex)
-			count += 1
-		}
-		if (count > 0) {
+	let previousDir: string | undefined
+	for (const [index, path] of pagePaths.entries()) {
+		const dir = parentDir(chapterPathOf(path))
+		const last = chapters.at(-1)
+		if (last === undefined || dir !== previousDir) {
 			chapters.push({
-				index: chapterIndex,
+				index: chapters.length,
 				title: chapterTitleOf(dir),
-				firstPage,
-				pageCount: count,
+				firstPage: index,
+				pageCount: 1,
 			})
-			chapterIndex += 1
+		} else {
+			chapters[chapters.length - 1] = { ...last, pageCount: last.pageCount + 1 }
 		}
+		pageToChapter.push(chapters.length - 1)
+		previousDir = dir
 	}
 	return { chapters, pageToChapter }
 }

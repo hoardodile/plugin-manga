@@ -327,13 +327,14 @@ async function fileList(
 
 /** Image names of a page-folder resource, in reading order. */
 async function imageNamesOf(api: ResourceAPI): Promise<string[]> {
-	const sorted = sortPagePaths(await api.listFileNames())
+	// The host applies upload manifests and the natural-order fallback.
+	const names = await api.listFileNames()
 	const types = await mapConcurrent(
-		sorted,
+		names,
 		PLUGIN_IMAGE_PROBE_CONCURRENCY,
 		(name) => api.sniff(name),
 	)
-	return sorted.filter((_, index) => types[index]?.kind === "image")
+	return names.filter((_, index) => types[index]?.kind === "image")
 }
 
 /** Fully probed pages of a page-folder resource, in reading order. */

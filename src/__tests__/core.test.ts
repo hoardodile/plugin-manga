@@ -166,6 +166,33 @@ describe("classifySource", () => {
 })
 
 describe("buildChapterIndex", () => {
+	it("indexes consecutive directory runs without changing reading order", () => {
+		const paths = [
+			"Ch2/b.jpg",
+			"Ch2/a.jpg",
+			"root.jpg",
+			"Ch1/a.jpg",
+			"Ch2/c.jpg",
+		]
+		const book = buildBook(paths)
+		expect(book.pages).toEqual(paths)
+		expect(
+			book.chapters.map((c) => [c.title, c.firstPage, c.pageCount]),
+		).toEqual([
+			["Ch2", 0, 2],
+			[undefined, 2, 1],
+			["Ch1", 3, 1],
+			["Ch2", 4, 1],
+		])
+		expect(book.pageToChapter).toEqual([0, 0, 1, 2, 3])
+		paths.forEach((_, index) => {
+			const location = chapterOf(book, index)
+			expect(
+				linearIndexOf(book, location.chapterIndex, location.pageInChapter),
+			).toBe(index)
+		})
+	})
+
 	it("groups directory pages into chapters in natural order", () => {
 		// Input is the reading order (paths pre-sorted by the caller).
 		const { chapters, pageToChapter } = buildChapterIndex([
@@ -225,12 +252,11 @@ describe("buildChapterIndex", () => {
 			"book.cbz!Ch2/001.jpg",
 			"book.cbz!001.jpg",
 		])
-		// Root-level (`book.cbz!001.jpg`, no `/`) forms the leading chapter;
-		// the two subdirectory pages become "Ch1" and "Ch2".
+		// The qualifier does not change directory grouping or page order.
 		expect(chapters.map((c) => [c.title, c.firstPage, c.pageCount])).toEqual([
-			[undefined, 0, 1],
-			["Ch1", 1, 1],
-			["Ch2", 2, 1],
+			["Ch1", 0, 1],
+			["Ch2", 1, 1],
+			[undefined, 2, 1],
 		])
 		expect(pageToChapter).toEqual([0, 1, 2])
 	})

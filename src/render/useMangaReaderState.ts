@@ -1,4 +1,8 @@
 import { useCacheWriter } from "@hoardodile/sdk-react"
+import {
+	getVisibilitySnapshot,
+	subscribeToVisibility,
+} from "@hoardodile/sdk-web"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { chapterOf, type MangaBook } from "../core/book.ts"
 import {
@@ -93,6 +97,29 @@ export function useMangaPosition(
 		[chapterProgress],
 	)
 	const hasHydratedRef = useRef(false)
+	const pageRef = useRef(currentPageIndex)
+	pageRef.current = currentPageIndex
+	const progressRef = useRef(progressState)
+	progressRef.current = progressState
+
+	// Older installed SDKs also expose visibility: flush before parent teardown.
+	useEffect(
+		() =>
+			subscribeToVisibility(() => {
+				if (
+					getVisibilitySnapshot() ||
+					!hasHydratedRef.current ||
+					book === undefined
+				)
+					return
+				api.setCache("position", encodePageIndexFromBook(book)(pageRef.current))
+				api.setCache(
+					"chapterProgress",
+					encodeMangaProgress(progressRef.current),
+				)
+			}),
+		[api, book],
+	)
 
 	useEffect(
 		function hydrateOnce() {
@@ -141,6 +168,9 @@ export function useMangaPosition(
 	)
 
 	const requestScrollTo = useCallback((index: number) => {
+		// Explicit navigation is the reading position even if the scroll
+		// observer settles later or the preview closes before it reports.
+		setCurrentPageIndex(index)
 		setScrollToPage(index)
 	}, [])
 	const clearScrollRequest = useCallback(() => {
